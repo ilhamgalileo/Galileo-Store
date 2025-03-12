@@ -121,8 +121,10 @@ const PlaceOrderStoreTransfer = () => {
                     <ul>
                         <li>Items: Rp{itemsPrice.toLocaleString()}</li>
                         <li>Tax: Rp{taxPrice.toLocaleString()}</li>
-                        <li>Discount: Rp{discount.toLocaleString()}</li>
-                        <li>Total: Rp{totalPrice.toLocaleString()}</li>
+                        {discount > 0 && (
+                            <li>Discount: Rp{discount.toLocaleString()}</li>
+                        )}
+                        <li className="mt-1 pt-2 border-t border-black w-1/5">Total: Rp{totalPrice.toLocaleString()}</li>
                     </ul>
                 </div>
                 <button

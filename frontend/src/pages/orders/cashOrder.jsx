@@ -254,6 +254,12 @@ const CashOrder = () => {
                   <span>Received Amount:</span>
                   <span>Rp{new Intl.NumberFormat('id-ID').format(cashOrder.receivedAmount)}</span>
                 </div>
+                {cashOrder.discount > 0 && (
+                  <div className="flex justify-between mb-2">
+                    <span>Discount:</span>
+                    <span>Rp{cashOrder.discount.toLocaleString()}</span>
+                  </div>
+                )}
                 <div className="flex justify-between font-bold mt-2 pt-2 border-t border-black">
                   <span>Change:</span>
                   <span>Rp{new Intl.NumberFormat('id-ID').format(cashOrder.change)}</span>

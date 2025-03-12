@@ -14,11 +14,9 @@ const PlaceCashOrder = () => {
   const cart = useSelector((state) => state.cart)
 
   const itemsPrice = cart.cartItems.reduce((acc, item) => acc + item.qty * item.price, 0) || 0
-
   const taxPrice = Math.round(0.11 * itemsPrice)
   const discount = itemsPrice < 5000000 ? 0 : Math.round(itemsPrice * 0.10)
-
-  const totalPrice = Math.round((itemsPrice + taxPrice - discount)|| 0)
+  const totalPrice = Math.round((itemsPrice + taxPrice - discount) || 0)
 
   const [createCashOrder, { isLoading, error }] = useCreateCashOrderMutation()
   const [cashDetails, setCashDetails] = useState({
@@ -60,6 +58,7 @@ const PlaceCashOrder = () => {
         cust_address: cashDetails.cust_address,
         receivedAmount,
         orderItems,
+        discount,
         taxPrice,
         totalAmount: totalPrice
       }).unwrap()
@@ -126,10 +125,12 @@ const PlaceCashOrder = () => {
                   <span>Tax (PPN 11%):</span>
                   <span>Rp{taxPrice.toLocaleString()}</span>
                 </div>
-                <div className="flex justify-between text-white">
-                  <span>Discount:</span>
-                  <span>Rp{discount.toLocaleString()}</span>
-                </div>
+                {discount > 0 && (
+                  <div className="flex justify-between text-white">
+                    <span>Discount:</span>
+                    <span>Rp{discount.toLocaleString()}</span>
+                  </div>
+                )}
                 <div className="flex justify-between font-semibold text-lg pt-3 border-t border-gray-200">
                   <span>Total:</span>
                   <span>Rp{totalPrice.toLocaleString()}</span>
