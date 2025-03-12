@@ -113,10 +113,6 @@ const StoreOrder = () => {
                                 <span className="text-green-700">Paid on {moment(order.paidAt).format("DD MMMM YYYY")}</span> :
                                 <span className="text-red-600">Cancelled</span>
                             }</strong></p>
-                            <p className="mb-1">Delivery Status: <strong>{order.isDelivered ?
-                                <span className="text-green-700">On Process {moment(order.deliveredAt).format("DD MMMM YYYY")}</span> :
-                                <span className="text-red-600">Pending</span>
-                            }</strong></p>
                             <p className="mb-1">Method: <strong>{order.paymentMethod}</strong></p>
                         </div>
                     </div>
@@ -206,7 +202,7 @@ const StoreOrder = () => {
                                             </td>
                                             <td className="p-2">{item.qty}</td>
                                             <td className="p-2">Rp{new Intl.NumberFormat('id-ID').format(item.price)}</td>
-                                            <td className="p-2">Rp{new Intl.NumberFormat('id-ID').format(item.qty * item.price)}</td>
+                                            <td className="p-2">Rp{new Intl.NumberFormat('id-ID').format(item.price)}</td>
                                         </tr>
                                     ))}
                                 </tbody>
@@ -245,6 +241,12 @@ const StoreOrder = () => {
                                     <p>Tax (PPN 11%):</p>
                                     <strong>Rp{new Intl.NumberFormat('id-ID').format(order.taxPrice)}</strong>
                                 </div>
+                                {order.discount > 0 && (
+                                    <div className="flex justify-between mt-2">
+                                        <p>Discount:</p>
+                                        <strong>- Rp{new Intl.NumberFormat('id-ID').format(order.discount)}</strong>
+                                    </div>
+                                )}
                                 <div className="flex justify-between mt-2 pt-2 border-t border-black">
                                     <p>Total:</p>
                                     <strong>Rp{new Intl.NumberFormat('id-ID').format(order.totalPrice)}</strong>

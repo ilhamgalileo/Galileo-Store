@@ -12,8 +12,9 @@ const PlaceOrderStoreTransfer = () => {
     const navigate = useNavigate()
     const cart = useSelector(state => state.cart)
     const itemsPrice = cart.cartItems.reduce((acc, item) => acc + item.qty * item.price, 0) || 0
+    const discount = itemsPrice < 5000000 ? 0 : Math.round(itemsPrice * 0.10);
     const taxPrice = Math.round(itemsPrice * 0.11)
-    const totalPrice = Math.round(itemsPrice + taxPrice)
+    const totalPrice = Math.round(itemsPrice + taxPrice - discount)
     const [createOrder, { isLoading, error }] = useCreateStoreTransferOrderMutation()
     const [payOrder] = usePayOrderStoreMutation()
 
@@ -43,6 +44,7 @@ const PlaceOrderStoreTransfer = () => {
             paymentMethod: cart.paymentMethod,
             itemsPrice: cart.itemsPrice,
             taxPrice: cart.taxPrice,
+            discount: discount,
             totalPrice: cart.totalPrice,
         }).unwrap()
 

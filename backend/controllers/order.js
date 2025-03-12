@@ -19,8 +19,7 @@ function calcPrice(orderItems) {
   const shippingPrice =
     totalWeight < 1000 ? 0 : Math.ceil(totalWeight / 1000) * 15000;
 
-  const discount = itemsPrice < 5000000 ? 0 : Math.round(itemsPrice * 0.1);
-
+  const discount = itemsPrice < 5000000 ? 0 : Math.round(itemsPrice * 0.10);
   const subtotal = itemsPrice + shippingPrice;
   const taxPrice = Math.round(subtotal * 0.11);
   const totalPrice = Math.round(subtotal + taxPrice - discount);
