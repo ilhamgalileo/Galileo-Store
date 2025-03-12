@@ -18,19 +18,18 @@ function calcPrice(orderItems) {
 
   const shippingPrice =
     totalWeight < 1000 ? 0 : Math.ceil(totalWeight / 1000) * 15000;
-  
-    const discountPrice = 
-    totalPrice < 100000 ? 0 : Math.ceil(totalPrice) -  0.20
+
+  const discount = itemsPrice < 5000000 ? 0 : Math.round(itemsPrice * 0.1);
 
   const subtotal = itemsPrice + shippingPrice;
   const taxPrice = Math.round(subtotal * 0.11);
-  const totalPrice = Math.round(subtotal + taxPrice + discountPrice);
+  const totalPrice = Math.round(subtotal + taxPrice - discount);
 
   return {
     itemsPrice: Math.round(itemsPrice),
     shippingPrice: Math.round(shippingPrice),
     taxPrice: Math.round(taxPrice),
-    discount : Math.round(discountPrice),
+    discount: Math.round(discount),
     totalPrice,
   };
 }
@@ -65,7 +64,7 @@ export const createOrder = asyncHandler(async (req, res) => {
     };
   });
 
-  const { itemsPrice, taxPrice, shippingPrice, totalPrice } =
+  const { itemsPrice, taxPrice, shippingPrice, totalPrice, discount } =
     calcPrice(dbOrderItems);
 
   const order = new Order({
@@ -75,6 +74,7 @@ export const createOrder = asyncHandler(async (req, res) => {
     paymentMethod,
     itemsPrice,
     taxPrice,
+    discount,
     shippingPrice,
     totalPrice,
   });
@@ -114,6 +114,16 @@ export const createOrder = asyncHandler(async (req, res) => {
         quantity: 1,
         name: "PPN 11%",
       },
+      ...(discount > 0
+        ? [
+            {
+              id: "DISCOUNT",
+              price: -discount,
+              quantity: 1,
+              name: "Discount",
+            },
+          ]
+        : []),
       ...(shippingPrice > 0
         ? [
             {

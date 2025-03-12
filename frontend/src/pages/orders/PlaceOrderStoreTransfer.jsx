@@ -119,6 +119,7 @@ const PlaceOrderStoreTransfer = () => {
                     <ul>
                         <li>Items: Rp{itemsPrice.toLocaleString()}</li>
                         <li>Tax: Rp{taxPrice.toLocaleString()}</li>
+                        <li>Discount: Rp{discount.toLocaleString()}</li>
                         <li>Total: Rp{totalPrice.toLocaleString()}</li>
                     </ul>
                 </div>

@@ -38,7 +38,11 @@ const orderStoreSchema = mongoose.Schema(
     },
     returnedItems: [
       {
-        product: { type: mongoose.Schema.Types.ObjectId, ref: "Product", required: true },
+        product: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Product",
+          required: true,
+        },
         name: String,
         image: String,
         price: Number,
@@ -48,6 +52,7 @@ const orderStoreSchema = mongoose.Schema(
     ],
 
     itemsPrice: { type: Number, required: true },
+    discount: { type: Number },
     taxPrice: { type: Number, required: true, default: 0.0 },
     totalPrice: { type: Number, required: true, default: 0.0 },
     isPaid: { type: Boolean, required: true, default: false },

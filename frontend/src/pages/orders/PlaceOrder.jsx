@@ -16,21 +16,20 @@ const PlaceOrder = () => {
   const cart = useSelector((state) => state.cart);
   const { userInfo } = useSelector((state) => state.auth);
 
-  // Ambil shippingAddress dari database
   const { data: userData, isLoading: isLoadingAddress, error: addressError } = useGetAddressQuery(userInfo?.user?._id);
 
-  const shippingAddress = userData?.shippingAddress?.[0]; // Ambil alamat pertama dari array
+  const shippingAddress = userData?.shippingAddress?.[0]
 
   const itemsPrice = cart.cartItems.reduce((acc, item) => acc + item.qty * item.price, 0) || 0;
   const totalWeight = cart.cartItems.reduce((acc, item) => acc + (item.weight || 0) * item.qty, 0);
   const shippingPrice = totalWeight < 1000 ? 0 : Math.ceil(totalWeight / 1000) * 15000;
   const taxPrice = Math.round((itemsPrice + shippingPrice) * 0.11);
-  const totalPrice = Math.round(itemsPrice + shippingPrice + taxPrice);
+  const discount = itemsPrice < 5000000 ? 0 : Math.round(itemsPrice * 0.10)
+  const totalPrice = Math.round(itemsPrice + shippingPrice + taxPrice - discount);
 
   const [createOrder, { isLoading, error }] = useCreateOrderMutation();
   const [payOrder] = usePayOrderMutation();
 
-  // Validasi apakah shippingAddress sudah ada
   useEffect(() => {
     if (!isLoadingAddress && !shippingAddress) {
       navigate("/shipping");
@@ -45,11 +44,12 @@ const PlaceOrder = () => {
 
     const res = await createOrder({
       orderItems: cart.cartItems,
-      shippingAddress: shippingAddress, // Gunakan shippingAddress dari database
+      shippingAddress: shippingAddress,
       paymentMethod: cart.paymentMethod,
       itemsPrice: itemsPrice,
       shippingPrice: shippingPrice,
       taxPrice: taxPrice,
+      discount: discount,
       totalPrice: totalPrice,
     }).unwrap();
 
@@ -156,6 +156,7 @@ const PlaceOrder = () => {
           <ul className="text-gray-950 text-lg">
             <li>Items: Rp{itemsPrice.toLocaleString()}</li>
             <li>Shipping: Rp{shippingPrice.toLocaleString()}</li>
+            <li>Discount: Rp{discount.toLocaleString()}</li>
             <li>Tax: Rp{taxPrice.toLocaleString()}</li>
             <li className="mt-1 pt-2 border-t border-black w-1/5">Total: Rp{totalPrice.toLocaleString()}</li>
           </ul>
