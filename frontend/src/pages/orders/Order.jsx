@@ -17,7 +17,7 @@ const Order = () => {
   const [deliverOrder, { isLoading: loadingDeliver }] = useDeliverOrderMutation();
   const [returnOrder, { isLoading: loadingReturn }] = useReturnOrderMutation();
   const { userInfo } = useSelector((state) => state.auth);
-  const [selectedItems, setSelectedItems] = useState([]);    
+  const [selectedItems, setSelectedItems] = useState([]);
   const [editedQuantities, setEditedQuantities] = useState({});
   const [selectAll, setSelectAll] = useState(false);
 
@@ -280,6 +280,12 @@ const Order = () => {
                   <p>Tax (PPN 11%):</p>
                   <strong>Rp{new Intl.NumberFormat('id-ID').format(order.taxPrice)}</strong>
                 </div>
+                {order.discount > 0 && (
+                  <div className="flex justify-between mt-2">
+                    <p>Discount:</p>
+                    <strong>- Rp{new Intl.NumberFormat('id-ID').format(order.discount)}</strong>
+                  </div>
+                )}
                 <div className="flex justify-between mt-2 pt-2 border-t border-black">
                   <p>Total:</p>
                   <strong>Rp{new Intl.NumberFormat('id-ID').format(order.totalPrice)}</strong>
