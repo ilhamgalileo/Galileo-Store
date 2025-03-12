@@ -62,7 +62,7 @@ const AllProducts = () => {
                                                 {product?.name.substring(0, 40)}
                                             </h5>
                                             <p className="text-gray-100 text-lg mb-4">
-                                                Stock: {product?.countInStock}
+                                                Rp{new Intl.NumberFormat('id-ID').format(product?.price)}
                                             </p>
                                             <div className="flex justify-between items-center mb-4">
                                                 <Link
@@ -87,15 +87,14 @@ const AllProducts = () => {
                                                     </svg>
                                                 </Link>
                                                 <p className="text-gray-100">
-                                                    Rp {new Intl.NumberFormat('id-ID').format(product?.price)}
+                                                    Stock: {product?.countInStock}
                                                 </p>
                                             </div>
                                             <button
-                                                className={`inline-flex items-center justify-center px-3 py-2 text-sm font-medium text-white rounded-lg transition-colors ${
-                                                    product.countInStock === 0
+                                                className={`inline-flex items-center justify-center px-3 py-2 text-sm font-medium text-white rounded-lg transition-colors ${product.countInStock === 0
                                                         ? "bg-gray-500 cursor-not-allowed"
                                                         : "bg-green-600 hover:bg-green-700"
-                                                }`}
+                                                    }`}
                                                 onClick={() => addToCartHandler(product, 1)}
                                                 disabled={product.countInStock === 0}
                                             >
