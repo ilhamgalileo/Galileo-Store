@@ -1,15 +1,14 @@
-import { useEffect, useState } from "react"
-import { FaTrash, FaEdit, FaCheck, FaTimes, FaIdBadge } from "react-icons/fa"
-import Loader from "../../components/loader"
-import { toast } from "react-toastify"
+import { useEffect, useState } from "react";
+import { FaTrash, FaEdit, FaCheck, FaTimes, FaIdBadge } from "react-icons/fa";
+import Loader from "../../components/loader";
+import { toast } from "react-toastify";
 import {
   useDeleteUserMutation,
   useGetUsersQuery,
   useUpdateUserMutation,
   useMarkUserAsAdminMutation,
-} from "../../redux/api/usersApiSlice"
-import Message from "../../components/Message"
-
+} from "../../redux/api/usersApiSlice";
+import Message from "../../components/Message";
 
 const UserList = () => {
   const { data: users, refetch, isLoading, error } = useGetUsersQuery();
@@ -41,9 +40,9 @@ const UserList = () => {
   const makeAdminHandler = async (id) => {
     if (window.confirm("Are you sure you want to make this user an admin?")) {
       try {
-        await makeUserAsAdmin(id)
+        await makeUserAsAdmin(id);
         toast.success("User has been promoted to admin");
-        refetch()
+        refetch();
       } catch (err) {
         toast.error(err?.data?.message || err.error);
       }
@@ -70,9 +69,11 @@ const UserList = () => {
     }
   };
 
+  const admins = users ? users.filter((user) => user.isAdmin) : [];
+
   return (
     <div className="p-4 text-gray-950">
-      <h1 className="text-2xl font-semibold mb-4 ml-[4rem]">Users</h1>
+      <h1 className="text-2xl font-semibold mb-4 ml-[4rem] mt-8 text-center">Admins</h1>
       {isLoading ? (
         <Loader />
       ) : error ? (
@@ -87,18 +88,15 @@ const UserList = () => {
                 <th className="px-4 py-2 text-left">ID</th>
                 <th className="px-4 py-2 text-left">NAME</th>
                 <th className="px-4 py-2 text-left">EMAIL</th>
-                <th className="px-4 py-2 text-left">ADMIN</th>
-                <th className="px-4 py-2 text-left">SUPER ADMIN</th>
                 <th className="px-4 py-2 text-left">Delete</th>
-                <th className="px-4 py-2 text-left">Make As Admin</th>
               </tr>
             </thead>
             <tbody>
-              {users.map((user) => (
-                <tr key={user._id}>
-                  <td className="px-4 py-2">{user._id}</td>
+              {admins.map((admin) => (
+                <tr key={admin._id}>
+                  <td className="px-4 py-2">{admin._id}</td>
                   <td className="px-4 py-2">
-                    {editableUserId === user._id ? (
+                    {editableUserId === admin._id ? (
                       <div className="flex items-center">
                         <input
                           type="text"
@@ -107,7 +105,7 @@ const UserList = () => {
                           className="w-full p-2 border rounded-lg"
                         />
                         <button
-                          onClick={() => updateHandler(user._id)}
+                          onClick={() => updateHandler(admin._id)}
                           className="ml-2 bg-blue-500 text-white py-2 px-4 rounded-lg"
                         >
                           <FaCheck />
@@ -115,10 +113,10 @@ const UserList = () => {
                       </div>
                     ) : (
                       <div className="flex items-center">
-                        {user.username}{" "}
+                        {admin.username}{" "}
                         <button
                           onClick={() =>
-                            toggleEdit(user._id, user.username, user.email)
+                            toggleEdit(admin._id, admin.username, admin.email)
                           }
                         >
                           <FaEdit className="ml-[1rem]" />
@@ -127,7 +125,7 @@ const UserList = () => {
                     )}
                   </td>
                   <td className="px-4 py-2">
-                    {editableUserId === user._id ? (
+                    {editableUserId === admin._id ? (
                       <div className="flex items-center">
                         <input
                           type="text"
@@ -136,7 +134,7 @@ const UserList = () => {
                           className="w-full p-2 border rounded-lg"
                         />
                         <button
-                          onClick={() => updateHandler(user._id)}
+                          onClick={() => updateHandler(admin._id)}
                           className="ml-2 bg-blue-500 text-white py-2 px-4 rounded-lg"
                         >
                           <FaCheck />
@@ -144,10 +142,10 @@ const UserList = () => {
                       </div>
                     ) : (
                       <div className="flex items-center">
-                        <a href={`mailto:${user.email}`}>{user.email}</a>{" "}
+                        <a href={`mailto:${admin.email}`}>{admin.email}</a>{" "}
                         <button
                           onClick={() =>
-                            toggleEdit(user._id, user.name, user.email)
+                            toggleEdit(admin._id, admin.username, admin.email)
                           }
                         >
                           <FaEdit className="ml-[1rem]" />
@@ -155,43 +153,15 @@ const UserList = () => {
                       </div>
                     )}
                   </td>
-                  <td className="px-4 py-2 ">
-                    {user.isAdmin ? (
-                      <FaCheck style={{ color: "green" }} />
-                    ) : (
-                      <FaTimes style={{ color: "red" }} />
-                    )}
-                  </td>
                   <td className="px-4 py-2">
-                    {user.superAdmin ? (
-                      <FaCheck style={{ color: "blue" }} />
-                    ) : (
-                      <FaTimes style={{ color: "red" }} />
-                    )}
-                  </td>
-                  <td className="px-4 py-2">
-                    {!user.superAdmin && (
-                      <div className="flex">
-                        <button
-                          onClick={() => deleteHandler(user._id)}
-                          className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
-                        >
-                          <FaTrash />
-                        </button>
-                      </div>
-                    )}
-                  </td>
-                  <td className="px-4 py-2">
-                    {!user.superAdmin && (
-                      <div className="flex">
-                        <button
-                          onClick={() => makeAdminHandler(user._id)}
-                          className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-                        >
-                          <FaIdBadge />
-                        </button>
-                      </div>
-                    )}
+                    <div className="flex">
+                      <button
+                        onClick={() => deleteHandler(admin._id)}
+                        className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+                      >
+                        <FaTrash />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -199,8 +169,121 @@ const UserList = () => {
           </table>
         </div>
       )}
+      <div className="mt-[5rem]">
+        <h1 className="text-2xl font-semibold mb-4 ml-[4rem] text-center">Users</h1>
+        {isLoading ? (
+          <Loader />
+        ) : error ? (
+          <Message variant="danger">
+            {error?.data?.message || error.error}
+          </Message>
+        ) : (
+          <div className="flex flex-col md:flex-row">
+            <table className="w-full md:w-4/5 mx-auto">
+              <thead>
+                <tr>
+                  <th className="px-4 py-2 text-left">ID</th>
+                  <th className="px-4 py-2 text-left">NAME</th>
+                  <th className="px-4 py-2 text-left">EMAIL</th>
+                  <th className="px-4 py-2 text-left">Delete</th>
+                  <th className="px-4 py-2 text-left">Make As Admin</th>
+                </tr>
+              </thead>
+              <tbody>
+                {users.map((user) => (
+                  <tr key={user._id}>
+                    <td className="px-4 py-2">{user._id}</td>
+                    <td className="px-4 py-2">
+                      {editableUserId === user._id ? (
+                        <div className="flex items-center">
+                          <input
+                            type="text"
+                            value={editableUserName}
+                            onChange={(e) => setEditableUserName(e.target.value)}
+                            className="w-full p-2 border rounded-lg"
+                          />
+                          <button
+                            onClick={() => updateHandler(user._id)}
+                            className="ml-2 bg-blue-500 text-white py-2 px-4 rounded-lg"
+                          >
+                            <FaCheck />
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="flex items-center">
+                          {user.username}{" "}
+                          <button
+                            onClick={() =>
+                              toggleEdit(user._id, user.username, user.email)
+                            }
+                          >
+                            <FaEdit className="ml-[1rem]" />
+                          </button>
+                        </div>
+                      )}
+                    </td>
+                    <td className="px-4 py-2">
+                      {editableUserId === user._id ? (
+                        <div className="flex items-center">
+                          <input
+                            type="text"
+                            value={editableUserEmail}
+                            onChange={(e) => setEditableUserEmail(e.target.value)}
+                            className="w-full p-2 border rounded-lg"
+                          />
+                          <button
+                            onClick={() => updateHandler(user._id)}
+                            className="ml-2 bg-blue-500 text-white py-2 px-4 rounded-lg"
+                          >
+                            <FaCheck />
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="flex items-center">
+                          <a href={`mailto:${user.email}`}>{user.email}</a>{" "}
+                          <button
+                            onClick={() =>
+                              toggleEdit(user._id, user.name, user.email)
+                            }
+                          >
+                            <FaEdit className="ml-[1rem]" />
+                          </button>
+                        </div>
+                      )}
+                    </td>
+                    <td className="px-4 py-2">
+                      {!user.superAdmin && (
+                        <div className="flex">
+                          <button
+                            onClick={() => deleteHandler(user._id)}
+                            className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+                          >
+                            <FaTrash />
+                          </button>
+                        </div>
+                      )}
+                    </td>
+                    <td className="px-4 py-2">
+                      {!user.superAdmin && (
+                        <div className="flex">
+                          <button
+                            onClick={() => makeAdminHandler(user._id)}
+                            className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                          >
+                            <FaIdBadge />
+                          </button>
+                        </div>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
 
-export default UserList
+export default UserList;
