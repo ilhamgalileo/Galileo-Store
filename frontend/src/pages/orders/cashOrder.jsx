@@ -51,17 +51,22 @@ const CashOrder = () => {
 
   const handleDownloadPDF = useCallback(async () => {
     if (!invoiceRef.current) return;
-
+  
     setShowDownloadButton(false);
-
-    const canvas = await html2canvas(invoiceRef.current, { scale: 1.8, useCORS: true });
+  
+    const canvas = await html2canvas(invoiceRef.current, { scale: 2, useCORS: true });
     const imgData = canvas.toDataURL("image/png");
     const pdf = new jsPDF("p", "mm", "a4");
     const pageWidth = pdf.internal.pageSize.getWidth();
     const pageHeight = pdf.internal.pageSize.getHeight();
-    pdf.setFillColor(240, 240, 239)
-    pdf.rect(0, 0, pageWidth, pageHeight, "F")
-    pdf.addImage(imgData, "PNG", 20, 20, 171, (canvas.height * 171) / canvas.width);
+  
+    pdf.setFillColor(240, 240, 239);
+    pdf.rect(0, 0, pageWidth, pageHeight, "F");
+  
+    const imgWidth = 180;
+    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+  
+    pdf.addImage(imgData, "PNG", 20, 25, imgWidth, imgHeight);
     pdf.save(`invoice-${orderId}.pdf`);
   }, [orderId]);
 
@@ -130,8 +135,8 @@ const CashOrder = () => {
             </button>
           )}
         </div>
-      <div className="container mx-auto max-w-[85%] ml-[9%] mt-[1rem] relative bg-[#f0f0ef]">
-        <div className="w-full p-2 relative" ref={invoiceRef}>
+      <div ref={invoiceRef} className="container mx-auto max-w-[85%] ml-[9%] mt-[1rem] relative bg-[#f0f0ef]">
+        <div className="w-full p-2 relative">
           <img src={logo} alt="Logo" className="absolute top-0 md:top-0 left-2 w-[6rem] md:w-[12rem] h-auto" />
           <h2 className="text-black text-sm md:text-2xl font-medium mr-[2rem] mt-[1rem] mb-[2.5rem] text-right">INVOICE</h2>
           <div className="grid grid-cols-2 gap-4">
@@ -253,13 +258,13 @@ const CashOrder = () => {
               {cashOrder.returnedItems && cashOrder.returnedItems.length > 0 && (
                 <div className="p-4 rounded-lg text-gray-800">
                   <h3 className="text-sm md:text-lg font-medium mb-1.5">Return Details: </h3>
-                  <div className="flex justify-between mb-2">
+                  <div className="flex justify-between mb-1">
                     <span>Return Status:</span>
                     <span>  {cashOrder.items.length === 0
                       ? "true"
                       : `${cashOrder.returnedItems.length} item${cashOrder.returnedItems.length > 1 ? "s" : ""} returned`}</span>
                   </div>
-                  <div className="flex justify-between mb-2">
+                  <div className="flex justify-between mb-1">
                     <span>Return Date:</span>
                     <span>
                       {cashOrder.returnedItems[0]?.returnedAt
@@ -276,20 +281,20 @@ const CashOrder = () => {
             <div className="flex-1">
               <div className="p-4 rounded-lg text-gray-800">
                 <h3 className="text-sm md:text-lg font-medium mb-1.5">Summary: </h3>
-                <div className="flex justify-between mb-2">
+                <div className="flex justify-between mb-1">
                   <span>Total Amount:</span>
                   <span>Rp{new Intl.NumberFormat('id-ID').format(cashOrder.totalAmount)}</span>
                 </div>
-                <div className="flex justify-between mb-2">
+                <div className="flex justify-between mb-1">
                   <span>TAX (PPN 11%):</span>
                   <span>Rp{new Intl.NumberFormat('id-ID').format(cashOrder.taxPrice)}</span>
                 </div>
-                <div className="flex justify-between mb-2">
+                <div className="flex justify-between mb-1">
                   <span>Received Amount:</span>
                   <span>Rp{new Intl.NumberFormat('id-ID').format(cashOrder.receivedAmount)}</span>
                 </div>
                 {cashOrder.discount > 0 && (
-                  <div className="flex justify-between mb-2">
+                  <div className="flex justify-between mb-1">
                     <span>Discount:</span>
                     <span>Rp{cashOrder.discount.toLocaleString()}</span>
                   </div>

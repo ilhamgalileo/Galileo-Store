@@ -17,9 +17,9 @@
   display: none;
   transition: opacity 0.5s ease-in-out;
   color: white;
-  white-space: nowrap; /* Tambahkan ini */
-  overflow: hidden; /* Tambahkan ini */
-  text-overflow: ellipsis; /* Tambahkan ini */
+  white-space: nowrap;
+  overflow: hidden; 
+  text-overflow: ellipsis;
 }
 
 #navigation-container:hover .nav-item-name {

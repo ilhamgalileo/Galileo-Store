@@ -44,17 +44,23 @@ const Shipping = () => {
   const { data: villages, isLoading: isLoadingVillages } = useGetVillagesQuery(selectedDistrict?.value || undefined, { skip: !selectedDistrict?.value });
 
   useEffect(() => {
-    if (shippingAddress && !isLoadingAddress && provinces?.data) {
-      setQrisBankDetails({
-        recipient: shippingAddress.recipient || "",
-        postalCode: shippingAddress.postalCode || "",
-        detailAddress: shippingAddress.detail_address || "",
-      });
-  
+    if (shippingAddress && !isLoadingAddress) {
+      setQrisBankDetails((prev) => ({
+        ...prev,
+        recipient: prev.recipient || shippingAddress.recipient || "",
+        postalCode: prev.postalCode || shippingAddress.postalCode || "",
+        detailAddress: prev.detailAddress || shippingAddress.detail_address || "",
+      }));
+    }
+  }, [shippingAddress, isLoadingAddress, dispatch]);
+
+  useEffect(() => {
+    if (shippingAddress && provinces?.data) {
+
       const provinceData = provinces.data.find(
         (province) => province.name === shippingAddress.province
       );
-  
+
       if (provinceData) {
         dispatch(setProvince({
           value: provinceData.code,
@@ -62,14 +68,14 @@ const Shipping = () => {
         }));
       }
     }
-  }, [shippingAddress, isLoadingAddress, dispatch, provinces?.data]);
-  
+  }, [shippingAddress, provinces?.data, dispatch]);
+
   useEffect(() => {
     if (shippingAddress && cities?.data) {
       const cityData = cities.data.find(
         (city) => city.name === shippingAddress.city
       );
-  
+
       if (cityData) {
         dispatch(setCity({
           value: cityData.code,
@@ -78,13 +84,13 @@ const Shipping = () => {
       }
     }
   }, [shippingAddress, cities?.data, dispatch]);
-  
+
   useEffect(() => {
     if (shippingAddress && districts?.data) {
       const districtData = districts.data.find(
         (district) => district.name === shippingAddress.district
       );
-  
+
       if (districtData) {
         dispatch(setDistrict({
           value: districtData.code,
@@ -93,13 +99,13 @@ const Shipping = () => {
       }
     }
   }, [shippingAddress, districts?.data, dispatch]);
-  
+
   useEffect(() => {
     if (shippingAddress && villages?.data) {
       const villageData = villages.data.find(
         (village) => village.name === shippingAddress.village
       );
-  
+
       if (villageData) {
         dispatch(setVillage({
           value: villageData.code,
@@ -109,21 +115,21 @@ const Shipping = () => {
     }
   }, [shippingAddress, villages?.data, dispatch]);
 
-  const InputField = ({ label, name, value, onChange, placeholder, readOnly = false }) => (
-    <div className="mb-4">
-      <label className="block text-gray-950 mb-2">{label}</label>
-      <input
-        type="text"
-        name={name}
-        value={value}
-        onChange={onChange}
-        placeholder={placeholder}
-        className="w-full p-2 h-[3rem] border rounded shadow-xl text-white bg-neutral-700"
-        required
-        readOnly={readOnly}
-      />
-    </div>
-  );
+  // const InputField = ({ label, name, value, onChange, placeholder, readOnly = false }) => (
+  //   <div className="mb-4">
+  //     <label className="block text-gray-950 mb-2">{label}</label>
+  //     <input
+  //       type="text"
+  //       name={name}
+  //       value={value}
+  //       onChange={onChange}
+  //       placeholder={placeholder}
+  //       className="w-full p-2 h-[3rem] border rounded shadow-xl text-white bg-neutral-700"
+  //       required
+  //       readOnly={readOnly}
+  //     />
+  //   </div>
+  // );
 
   const handleContinue = async () => {
     if (paymentMethod === "qris/bank") {
@@ -169,8 +175,10 @@ const Shipping = () => {
   };
 
   const handleQrisBankChange = (e) => {
-    const { name, value } = e.target;
-    setQrisBankDetails((prev) => ({ ...prev, [name]: value }));
+    setQrisBankDetails((prev) => ({
+      ...prev,
+      [e.target.name]: e.target.value,
+    }));
   };
 
   const handleProvinceChange = (selectedOption) => {
@@ -259,13 +267,17 @@ const Shipping = () => {
 
           {paymentMethod === "qris/bank" && (
             <>
-              <InputField
-                label="Recipient Package"
-                name="recipient"
-                value={qrisBankDetails.recipient}
-                onChange={handleQrisBankChange}
-                placeholder="Enter package recipient"
-              />
+              <div className="mb-4">
+              <label className="block text-gray-950 mb-2">Recipient</label>
+                <input
+                  label="Recipient Package"
+                  name="recipient"
+                  className="w-full p-2 h-[3rem] border rounded shadow-xl text-white bg-neutral-700"
+                  value={qrisBankDetails.recipient}
+                  onChange={handleQrisBankChange}
+                  placeholder="Enter package recipient"
+                />
+              </div>
 
               <div className="grid grid-cols-2 gap-4 mb-4">
                 <div className="mb-4">
@@ -320,13 +332,17 @@ const Shipping = () => {
                     menuPlacement="bottom"
                   />
                 </div>
-                <InputField
-                  label="Postal Code"
-                  name="postalCode"
-                  value={qrisBankDetails.postalCode}
-                  placeholder="Postal code will be set automatically"
-                  readOnly
-                />
+                <div className="mb-4">
+                  <label className="block text-gray-950">Postal Code</label>
+                  <input
+                    label="Postal Code"
+                    name="postalCode"
+                    className="w-full p-2 h-[3rem] border rounded shadow-xl text-white bg-neutral-700"
+                    value={qrisBankDetails.postalCode}
+                    placeholder="Postal code will be set automatically"
+                    readOnly
+                  />
+                </div>
               </div>
 
               <div className="mb-4">
@@ -350,7 +366,7 @@ const Shipping = () => {
               </button>
             </>
           )}
-          
+
           {paymentMethod === "cash" && (
             <div className="text-center mt-4">
               <p className="text-gray-500">You will be redirected to the cash order page.</p>
