@@ -112,8 +112,8 @@ const Order = () => {
             Download
           </button>
         </div>
-        <div ref={invoiceRef} className="w-full p-2 mt-2 relative bg-[#f0f0ef]">
-          <img src={logo} alt="Logo" className="absolute top-2 left-2 w-[12rem] h-auto" />
+        <div ref={invoiceRef} className="w-full p-2 mt-1 relative bg-[#f0f0ef]">
+          <img src={logo} alt="Logo" className="absolute mt-1 left-2 w-[12rem]" />
           <h2 className="text-black text-2xl font-medium mr-[2rem] mt-[1rem] mb-[2.5rem] text-right">INVOICE</h2>
           <div className="grid grid-cols-2 gap-4">
             <div className="text-gray-950 text-sm">

@@ -3,7 +3,7 @@ import Message from "../../components/Message";
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
-import { FaBox, FaShoppingCart, FaStar, FaStore, FaCommentDots, FaCartPlus, FaChevronLeft, FaChevronRight, FaArrowCircleRight, FaArrowCircleLeft, FaChevronCircleLeft } from "react-icons/fa";
+import { FaBox, FaShoppingCart, FaStar, FaStore, FaCommentDots, FaCartPlus, FaArrowCircleRight, FaArrowCircleLeft } from "react-icons/fa";
 
 const ProductCarousel = () => {
   const { data: products, isLoading, error } = useGetTopProductsQuery();

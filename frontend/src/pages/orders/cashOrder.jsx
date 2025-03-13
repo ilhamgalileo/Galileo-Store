@@ -6,7 +6,8 @@ import html2canvas from "html2canvas";
 import moment from "moment";
 import { toast } from "react-toastify";
 import { useSelector } from "react-redux";
-import logo from '../../assets/galileo2.png'
+import logo from '../../assets/galileo2.png';
+import { FaDownload } from "react-icons/fa";
 
 const CashOrder = () => {
   const { id: orderId } = useParams();
@@ -17,13 +18,42 @@ const CashOrder = () => {
   const [selectedItems, setSelectedItems] = useState([]);
   const [editedQuantities, setEditedQuantities] = useState({});
   const [selectAll, setSelectAll] = useState(false);
+  const [showDownloadButton, setShowDownloadButton] = useState(true);
 
   useEffect(() => {
-    refetch()
-  }, [refetch])
+    refetch();
+  }, [refetch]);
+
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      if (event.ctrlKey && event.key === 'p') {
+        event.preventDefault();
+        setShowDownloadButton(false);
+        setTimeout(() => {
+          window.print();
+        }, 300);
+      }
+    };
+
+    const handleBeforePrint = () => setShowDownloadButton(false);
+    const handleAfterPrint = () => setShowDownloadButton(true);
+
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('beforeprint', handleBeforePrint);
+    window.addEventListener('afterprint', handleAfterPrint);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('beforeprint', handleBeforePrint);
+      window.removeEventListener('afterprint', handleAfterPrint);
+    };
+  }, []);
 
   const handleDownloadPDF = useCallback(async () => {
     if (!invoiceRef.current) return;
+
+    setShowDownloadButton(false);
+
     const canvas = await html2canvas(invoiceRef.current, { scale: 1.8, useCORS: true });
     const imgData = canvas.toDataURL("image/png");
     const pdf = new jsPDF("p", "mm", "a4");
@@ -93,41 +123,43 @@ const CashOrder = () => {
     <p>Error: {error.data.message}</p>
   ) : (
     <div className="min-h-screen">
-      <div className="container mx-auto max-w-[85%] ml-[9%] mt-[1rem] relative bg-[#f0f0ef]">
-        <div className="flex justify-end sticky top-0 z-10 bg-[#f0f0ef]">
-          <button onClick={handleDownloadPDF} className="bg-blue-500 text-sm text-white font-bold px-1.5 py-1 rounded-lg">
-            Download
-          </button>
+      <div className="flex justify-end sticky top-0 z-0">
+          {showDownloadButton && (
+            <button onClick={handleDownloadPDF} className="bg-blue-500 text-sm text-white font-bold px-2 py-2 mr-7 rounded-full">
+              <FaDownload/>
+            </button>
+          )}
         </div>
-        <div ref={invoiceRef} className="w-full p-2 mt-2 relative">
-          <img src={logo} alt="Logo" className="absolute top-2 left-2 w-[12rem] h-auto" />
-          <h2 className="text-black text-2xl font-medium mr-[2rem] mt-[1rem] mb-[2.5rem] text-right">INVOICE</h2>
+      <div className="container mx-auto max-w-[85%] ml-[9%] mt-[1rem] relative bg-[#f0f0ef]">
+        <div className="w-full p-2 relative" ref={invoiceRef}>
+          <img src={logo} alt="Logo" className="absolute top-0 md:top-0 left-2 w-[6rem] md:w-[12rem] h-auto" />
+          <h2 className="text-black text-sm md:text-2xl font-medium mr-[2rem] mt-[1rem] mb-[2.5rem] text-right">INVOICE</h2>
           <div className="grid grid-cols-2 gap-4">
-            <div className="text-gray-950 text-sm">
-              <h3 className="font-bold text-xl mb-2.5 mt-[5rem]">Order Information: </h3>
-              <p className="mb-1">Order ID: <strong>{cashOrder._id}</strong></p>
-              <p className="mb-1">Payment On:  <strong>{moment(cashOrder.createdAt).format("DD MMMM YYYY")}</strong></p>
-              <p className="mb-1">Payment Status: <strong>{cashOrder.isPaid ?
+            <div className="text-gray-950 text-xs md:text-sm">
+              <h3 className="font-bold text-sm md:text-xl md:mb-2.5 mb-0.5 mt-[1rem] md:mt-[5rem]">Order Information: </h3>
+              <p className="mb-1">Order ID: {cashOrder._id}</p>
+              <p className="mb-1">Payment On:  {moment(cashOrder.createdAt).format("DD MMMM YYYY")}</p>
+              <p className="mb-1">Payment Status: {cashOrder.isPaid ?
                 <span className="text-green-700">Paid on: {moment(cashOrder.paidAt).format("DD MMMM YYYY")}</span> :
                 <span className="text-red-700">Cancelled</span>
-              }</strong></p>
+              }</p>
             </div>
 
-            <div className="text-gray-900 absolute top-[7rem] right-[7rem] text-sm">
-              <h3 className="text-xl font-bold mb-3">Published for: </h3>
-              <p className="mb-1"><strong>Buyer:</strong> {cashOrder.customerName}</p>
-              <p className="mb-1"><strong>Address:</strong> {cashOrder.address}</p>
-              <p className="mb-1"><strong>Method:</strong> {cashOrder.paymentMethod}</p>
+            <div className="text-gray-900 absolute md:top-[9.5rem]  right-[1rem] md:right-[7rem] text-xs md:text-sm">
+              <h3 className="text-xs md:text-xl font-bold mb-0.5 md:mb-2.5">Published for: </h3>
+              <p className="mb-1">Buyer: {cashOrder.customerName}</p>
+              <p className="mb-1">Address: {cashOrder.address}</p>
+              <p className="mb-1">Method: {cashOrder.paymentMethod}</p>
             </div>
           </div>
 
           <div className="overflow-x-auto mt-3">
             {cashOrder?.items?.length > 0 && (
               <div className="mt-4">
-                <h3 className="text-lg font-semibold mt-3 text-gray-950">Ordered Items: </h3>
+                <h3 className=" text-xs md:text-lg font-semibold mt-3 text-gray-950">Ordered Items: </h3>
                 <table className="table-auto w-full text-gray-800 border-collapse">
                   <thead className="border-b-2 border-gray-400">
-                    <tr>
+                    <tr className="text-xs md:text-sm">
                       {userInfo.user?.superAdmin && (
                         <th>
                           <input
@@ -145,9 +177,8 @@ const CashOrder = () => {
                     </tr>
                   </thead>
                   <tbody>
-
                     {cashOrder.items.map((item, index) => (
-                      <tr key={index} className="text-center text-gray-950">
+                      <tr key={index} className="text-center md:text-sm text-xs text-gray-950">
                         {userInfo.user.superAdmin && (
                           <td className="p-2">
                             <input
@@ -189,10 +220,10 @@ const CashOrder = () => {
 
           {cashOrder?.returnedItems?.length > 0 && (
             <div className="mt-4">
-              <h3 className="text-lg font-semibold text-red-500">Returned Items:</h3>
-              <table className="table-auto w-full text-gray-800 border-collapse">
-                <thead className="border-b-2 border-red-400">
-                  <tr className="text-red-600">
+              <h3 className="text-xs md:text-lg font-semibold text-gray-700">Returned Items:</h3>
+              <table className="table-auto w-full text-xs md:text-sm text-gray-800 border-collapse">
+                <thead className="border-b-2 border-gray-400">
+                  <tr className="text-gray-700 text-xs md:text-sm">
                     <th className="p-2">Product</th>
                     <th className="p-2">Quantity</th>
                     <th className="p-2">Unit Price</th>
@@ -201,9 +232,9 @@ const CashOrder = () => {
                 </thead>
                 <tbody>
                   {cashOrder?.returnedItems.map((item, index) => (
-                    <tr key={index} className="text-center text-red-500">
+                    <tr key={index} className="text-center text-gray-700">
                       <td className="p-2">
-                        <Link to={`/product/${item.product}`} className="text-red-500 hover:text-red-300">
+                        <Link to={`/product/${item.product}`} className="text-gray-700 hover:text-gray-400">
                           {item.name}
                         </Link>
                       </td>
@@ -217,31 +248,34 @@ const CashOrder = () => {
             </div>
           )}
 
-          <div className="mt-[3rem] flex justify-between gap-4 text font-medium">
+          <div className="mt-[3rem] flex justify-between gap-4 text-sm md:text-md font-medium">
             <div className="flex-1">
               {cashOrder.returnedItems && cashOrder.returnedItems.length > 0 && (
-                <div className="p-4 rounded-lg text-red-700">
-                  <h3 className="text-lg font-semibold mb-2">Return Details: </h3>
-                  <p className="mb-1">
-                    <strong>Return Status:</strong>{" "}
-                    {cashOrder.items.length === 0
+                <div className="p-4 rounded-lg text-gray-800">
+                  <h3 className="text-sm md:text-lg font-medium mb-1.5">Return Details: </h3>
+                  <div className="flex justify-between mb-2">
+                    <span>Return Status:</span>
+                    <span>  {cashOrder.items.length === 0
                       ? "true"
-                      : `${cashOrder.returnedItems.length} item${cashOrder.returnedItems.length > 1 ? "s" : ""} returned`}
-                  </p>
-                  <p className="mb-1">
-                    <strong>Return Date:</strong>{" "}
-                    {cashOrder.returnedItems[0]?.returnedAt
-                      ? moment(cashOrder.returnedItems[0].returnedAt).format("DD MMMM YYYY")
-                      : "Not Available"}
-                  </p>
-                  <p className="mb-1 border-t pt-2 mt-2 border-red-500 w-1/2">
-                    <strong>Return Amount:</strong> Rp{new Intl.NumberFormat('id-ID').format(cashOrder.returnAmount || 0)}
-                  </p>
+                      : `${cashOrder.returnedItems.length} item${cashOrder.returnedItems.length > 1 ? "s" : ""} returned`}</span>
+                  </div>
+                  <div className="flex justify-between mb-2">
+                    <span>Return Date:</span>
+                    <span>
+                      {cashOrder.returnedItems[0]?.returnedAt
+                        ? moment(cashOrder.returnedItems[0].returnedAt).format("DD MMMM YYYY")
+                        : "Not Available"}</span>
+                  </div>
+                  <div className="flex justify-between font-bold mt-2 pt-2 border-t border-black">
+                    <span>Return Amount:</span>
+                    <span>Rp{new Intl.NumberFormat('id-ID').format(cashOrder.returnAmount || 0)}</span>
+                  </div>
                 </div>
               )}
             </div>
             <div className="flex-1">
               <div className="p-4 rounded-lg text-gray-800">
+                <h3 className="text-sm md:text-lg font-medium mb-1.5">Summary: </h3>
                 <div className="flex justify-between mb-2">
                   <span>Total Amount:</span>
                   <span>Rp{new Intl.NumberFormat('id-ID').format(cashOrder.totalAmount)}</span>
@@ -283,7 +317,7 @@ const CashOrder = () => {
         )}
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default CashOrder
+export default CashOrder;

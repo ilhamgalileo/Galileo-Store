@@ -53,7 +53,6 @@ const ProductsTable = () => {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-
       <div className="mt-8 flex flex-col space-y-4 md:flex-row md:space-y-0 md:space-x-4">
         <input
           type="text"

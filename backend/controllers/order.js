@@ -166,9 +166,9 @@ export const getAllOrder = asyncHandler(async (req, res) => {
 
 export const getAllCombinedOrders = asyncHandler(async (req, res) => {
   const [orders, cashOrders, orderStore] = await Promise.all([
-    Order.find({}).populate("user", "id username"),
-    CashOrder.find({}).populate("items.product", "name price images"),
-    OrderStore.find({}).populate("user", "id username"),
+    Order.find({}).populate("user", "id username").sort({ createdAt: -1 }),
+    CashOrder.find({}).populate("items.product", "name price images").sort({ createdAt: -1 }),
+    OrderStore.find({}).populate("user", "id username").sort({ createdAt: -1 }),,
   ]);
 
   res.json({
@@ -424,8 +424,8 @@ export const calcTotalSalesByWeek = asyncHandler(async (req, res) => {
         {
           $group: {
             _id: {
-              month: { $dateToString: { format: "%Y-%m", date: "$paidAt" } }, // Tambahkan tahun untuk menghindari konflik antar tahun
-              week: { $ceil: { $divide: [{ $dayOfMonth: "$paidAt" }, 7] } }, // Hitung minggu dalam bulan
+              month: { $dateToString: { format: "%Y-%m", date: "$paidAt" } }, 
+              week: { $ceil: { $divide: [{ $dayOfMonth: "$paidAt" }, 7] } },
             },
             totalSales: { $sum: "$totalPrice" },
           },
@@ -444,8 +444,8 @@ export const calcTotalSalesByWeek = asyncHandler(async (req, res) => {
         {
           $group: {
             _id: {
-              month: { $dateToString: { format: "%Y-%m", date: "$createdAt" } }, // Tambahkan tahun untuk menghindari konflik antar tahun
-              week: { $ceil: { $divide: [{ $dayOfMonth: "$createdAt" }, 7] } }, // Hitung minggu dalam bulan
+              month: { $dateToString: { format: "%Y-%m", date: "$createdAt" } },
+              week: { $ceil: { $divide: [{ $dayOfMonth: "$createdAt" }, 7] } },
             },
             totalSales: { $sum: "$totalAmount" },
           },
