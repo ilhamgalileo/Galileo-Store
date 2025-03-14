@@ -5,7 +5,7 @@ import snap from "../config/midtrans.js";
 import CashOrder from "../models/cashOrder.js";
 import OrderStore from "../models/orderStore.js";
 
-function calcPrice(orderItems) {
+function calcPrice(orderItems, membership) {
   const itemsPrice = orderItems.reduce(
     (acc, item) => acc + item.price * item.qty,
     0
@@ -19,7 +19,16 @@ function calcPrice(orderItems) {
   const shippingPrice =
     totalWeight < 1000 ? 0 : Math.ceil(totalWeight / 1000) * 15000;
 
-  const discount = itemsPrice < 5000000 ? 0 : Math.round(itemsPrice * 0.10);
+  let discountRate = 0;
+  if (membership === "Platinum") {
+    discountRate = 0.07;
+  } else if (membership === "Gold") {
+    discountRate = 0.05;
+  } else if (membership === "Silver") {
+    discountRate = 0.03;
+  }
+
+  const discount = Math.round(itemsPrice * discountRate);
   const subtotal = itemsPrice + shippingPrice;
   const taxPrice = Math.round(subtotal * 0.11);
   const totalPrice = Math.round(subtotal + taxPrice - discount);
@@ -167,8 +176,11 @@ export const getAllOrder = asyncHandler(async (req, res) => {
 export const getAllCombinedOrders = asyncHandler(async (req, res) => {
   const [orders, cashOrders, orderStore] = await Promise.all([
     Order.find({}).populate("user", "id username").sort({ createdAt: -1 }),
-    CashOrder.find({}).populate("items.product", "name price images").sort({ createdAt: -1 }),
-    OrderStore.find({}).populate("user", "id username").sort({ createdAt: -1 }),,
+    CashOrder.find({})
+      .populate("items.product", "name price images")
+      .sort({ createdAt: -1 }),
+    OrderStore.find({}).populate("user", "id username").sort({ createdAt: -1 }),
+    ,
   ]);
 
   res.json({
@@ -424,7 +436,7 @@ export const calcTotalSalesByWeek = asyncHandler(async (req, res) => {
         {
           $group: {
             _id: {
-              month: { $dateToString: { format: "%Y-%m", date: "$paidAt" } }, 
+              month: { $dateToString: { format: "%Y-%m", date: "$paidAt" } },
               week: { $ceil: { $divide: [{ $dayOfMonth: "$paidAt" }, 7] } },
             },
             totalSales: { $sum: "$totalPrice" },
@@ -497,51 +509,64 @@ export const findOrderById = asyncHandler(async (req, res) => {
 });
 
 export const markOrderIsPay = asyncHandler(async (req, res) => {
-  const order = await Order.findById(req.params.id);
+  const order = await Order.findById(req.params.id).populate(
+    "user",
+    "totalSpent membership"
+  );
 
-  if (order) {
-    const { status, updatedAt, id, payment_type } = req.body;
-
-    order.isPaid = true;
-    order.paidAt = Date.now();
-    order.paymentMethod = payment_type;
-    order.paymentResult = {
-      status,
-      update_time: updatedAt,
-      id,
-    };
-
-    await Promise.all(
-      order.orderItems.map(async (item) => {
-        const product = await Product.findById(item.product);
-        if (product) {
-          product.countInStock -= item.qty;
-
-          product.sold += item.qty;
-
-          if (product.countInStock < 0) {
-            res.status(400);
-            throw new Error(`Stock insufficient for product: ${product.name}`);
-          }
-
-          await product.save();
-        } else {
-          res.status(404);
-          throw new Error(`Product not found: ${item.product}`);
-        }
-      })
-    );
-    const updatedOrder = await order.save();
-    res.json(updatedOrder);
-  } else {
+  if (!order) {
     res.status(404);
     throw new Error("Order not found");
   }
+
+  const { status, updatedAt, id, payment_type } = req.body;
+
+  order.isPaid = true;
+  order.paidAt = Date.now();
+  order.paymentMethod = payment_type;
+  order.paymentResult = {
+    status,
+    update_time: updatedAt,
+    id,
+  };
+
+  await Promise.all(
+    order.orderItems.map(async (item) => {
+      const product = await Product.findById(item.product);
+      if (product) {
+        product.countInStock -= item.qty;
+        product.sold += item.qty;
+
+        if (product.countInStock < 0) {
+          res.status(400);
+          throw new Error(`Stock insufficient for product: ${product.name}`);
+        }
+
+        await product.save();
+      } else {
+        res.status(404);
+        throw new Error(`Product not found: ${item.product}`);
+      }
+    })
+  );
+
+  await order.save();
+
+  if (order.user) {
+    order.user.totalSpent = (order.user.totalSpent || 0) + order.totalPrice;
+    order.user.updateMembership();
+    await order.user.save();
+  }
+
+  res.json(order);
 });
 
 export const markOrderAsReturned = asyncHandler(async (req, res) => {
   const { returnedItems } = req.body;
-  const order = await Order.findById(req.params.id);
+  const order = await Order.findById(req.params.id).populate(
+    "user",
+    "totalSpent"
+  );
 
   if (!order) {
     res.status(404);
@@ -582,7 +607,6 @@ export const markOrderAsReturned = asyncHandler(async (req, res) => {
     }
 
     productData.countInStock += qty;
-
     productData.sold -= qty;
 
     if (productData.sold < 0) {
@@ -609,7 +633,7 @@ export const markOrderAsReturned = asyncHandler(async (req, res) => {
   }
 
   order.totalPrice = Math.max(order.totalPrice - totalRefund, 0);
-  order.returnAmount += totalRefund;
+  order.returnAmount = (order.returnAmount || 0) + totalRefund;
 
   if (order.orderItems.length === 0) {
     order.isReturned = true;
@@ -618,8 +642,17 @@ export const markOrderAsReturned = asyncHandler(async (req, res) => {
     order.totalPrice = 0;
   }
 
-  const updatedOrder = await order.save();
-  res.json(updatedOrder);
+  await order.save();
+
+  if (order.user) {
+    order.user.totalSpent = Math.max(
+      (order.user.totalSpent || 0) - totalRefund,
+      0
+    );
+    await order.user.save();
+  }
+
+  res.json(order);
 });
 
 export const markOrderIsDeliver = asyncHandler(async (req, res) => {
