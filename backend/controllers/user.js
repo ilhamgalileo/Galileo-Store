@@ -154,6 +154,8 @@ export const getUserProfile = asyncHandler(async (req, res) => {
       _id: user._id,
       username: user.username,
       email: user.email,
+      totalSpent: user.totalSpent,
+      membership: user.membership
     });
   } else {
     res.status(404).send("User not found");

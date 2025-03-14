@@ -43,7 +43,7 @@ function calcPrice(orderItems, membership) {
 }
 
 export const createOrder = asyncHandler(async (req, res) => {
-  const { orderItems, shippingAddress, paymentMethod } = req.body;
+  const { orderItems, shippingAddress, paymentMethod, membership } = req.body;
 
   if (!orderItems || orderItems.length === 0) {
     res.status(400);
@@ -73,7 +73,7 @@ export const createOrder = asyncHandler(async (req, res) => {
   });
 
   const { itemsPrice, taxPrice, shippingPrice, totalPrice, discount } =
-    calcPrice(dbOrderItems);
+    calcPrice(dbOrderItems, membership);
 
   const order = new Order({
     orderItems: dbOrderItems,
@@ -128,7 +128,7 @@ export const createOrder = asyncHandler(async (req, res) => {
               id: "DISCOUNT",
               price: -discount,
               quantity: 1,
-              name: "Discount",
+              name: `Discount ${membership} Member`,
             },
           ]
         : []),

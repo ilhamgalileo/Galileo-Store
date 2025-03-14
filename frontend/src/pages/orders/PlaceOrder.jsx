@@ -8,7 +8,8 @@ import Loader from "../../components/loader";
 import { useCreateOrderMutation } from "../../redux/api/orderApiSlice";
 import { clearCartItems } from "../../redux/features/cart/cartSlice";
 import { usePayOrderMutation } from "../../redux/api/orderApiSlice";
-import { useGetAddressQuery } from "../../redux/api/shippingApiSlice"; // Import query untuk mengambil alamat pengiriman
+import { useGetAddressQuery } from "../../redux/api/shippingApiSlice";
+import { useGetUserProfileQuery } from "../../redux/api/usersApiSlice";
 
 const PlaceOrder = () => {
   const navigate = useNavigate();
@@ -17,6 +18,8 @@ const PlaceOrder = () => {
   const { userInfo } = useSelector((state) => state.auth);
 
   const { data: userData, isLoading: isLoadingAddress, error: addressError } = useGetAddressQuery(userInfo?.user?._id);
+  const { data: userProfile } = useGetUserProfileQuery();
+  const membership = userProfile?.membership || "none";
 
   const shippingAddress = userData?.shippingAddress?.[0]
 
@@ -24,7 +27,17 @@ const PlaceOrder = () => {
   const totalWeight = cart.cartItems.reduce((acc, item) => acc + (item.weight || 0) * item.qty, 0);
   const shippingPrice = totalWeight < 1000 ? 0 : Math.ceil(totalWeight / 1000) * 15000;
   const taxPrice = Math.round((itemsPrice + shippingPrice) * 0.11);
-  const discount = itemsPrice < 5000000 ? 0 : Math.round(itemsPrice * 0.10)
+
+  let discountRate = 0;
+  if (membership === "Platinum") {
+    discountRate = 0.07;
+  } else if (membership === "Gold") {
+    discountRate = 0.05;
+  } else if (membership === "Silver") {
+    discountRate = 0.03;
+  }
+
+  const discount = Math.round(itemsPrice * discountRate);
   const totalPrice = Math.round(itemsPrice + shippingPrice + taxPrice - discount);
 
   const [createOrder, { isLoading, error }] = useCreateOrderMutation();
@@ -51,6 +64,7 @@ const PlaceOrder = () => {
       taxPrice: taxPrice,
       discount: discount,
       totalPrice: totalPrice,
+      membership: membership
     }).unwrap();
 
     const token = res.token;
@@ -156,8 +170,10 @@ const PlaceOrder = () => {
           <ul className="text-gray-950 text-lg">
             <li>Items: Rp{itemsPrice.toLocaleString()}</li>
             <li>Shipping: Rp{shippingPrice.toLocaleString()}</li>
-            {discount > 0 && (
-              <li>Discount: Rp{discount.toLocaleString()}</li>
+            {membership !== "none" && (
+              <li className="text-green-600 font font-medium">
+                Discount ({membership} Member - {discountRate * 100}%): -Rp{discount.toLocaleString()}
+              </li>
             )}
             <li>Tax: Rp{taxPrice.toLocaleString()}</li>
             <li className="mt-1 pt-2 border-t border-black w-1/5">Total: Rp{totalPrice.toLocaleString()}</li>
