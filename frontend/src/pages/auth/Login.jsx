@@ -6,10 +6,12 @@ import { setCredientials } from "../../redux/features/auth/authSlice";
 import { toast } from "react-toastify";
 import Loader from "../../components/loader";
 import logo from '../../assets/galileoBlack.png';
+import { EyeIcon, EyeOffIcon } from "lucide-react"; // Gunakan ikon dari lucide-react
 
 const Login = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
 
     const dispatch = useDispatch();
     const navigate = useNavigate();
@@ -54,7 +56,6 @@ const Login = () => {
                     <h1 className="text-2xl font-semibold text-center text-white mb-6">Sign In</h1>
 
                     <form onSubmit={submitHandler} className="space-y-6">
-                        {/* Email Input */}
                         <div className="relative">
                             <input
                                 type="email"
@@ -72,10 +73,9 @@ const Login = () => {
                             </label>
                         </div>
 
-                        {/* Password Input */}
                         <div className="relative">
                             <input
-                                type="password"
+                                type={showPassword ? "text" : "password"}
                                 id="password"
                                 className="peer w-full rounded border-gray-600 bg-gray-700 text-white p-2 placeholder-transparent focus:outline-none focus:ring-2 focus:ring-orange-600"
                                 placeholder="Password"
@@ -88,6 +88,13 @@ const Login = () => {
                             >
                                 Password
                             </label>
+                            <button
+                                type="button"
+                                className="absolute right-2 top-3 text-gray-400 hover:text-orange-500"
+                                onClick={() => setShowPassword(!showPassword)}
+                            >
+                                {showPassword ? <EyeOffIcon size={18} /> : <EyeIcon size={18} />}
+                            </button>
                         </div>
 
                         <button

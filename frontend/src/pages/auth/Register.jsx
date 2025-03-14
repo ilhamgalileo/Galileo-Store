@@ -5,11 +5,13 @@ import Loader from "../../components/loader"
 import { setCredientials } from "../../redux/features/auth/authSlice"
 import { toast } from "react-toastify"
 import { useRegisterMutation } from "../../redux/api/usersApiSlice"
+import { EyeIcon, EyeOffIcon } from "lucide-react"
 
 const Register = () => {
     const [username, setUserName] = useState('')
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
+    const [showPassword, setShowPassword] = useState(false);
     const [confirmPassword, setConfirmPassword] = useState('')
 
     const disptach = useDispatch()
@@ -90,10 +92,10 @@ const Register = () => {
 
                     <div className="relative">
                         <input
-                            type="password"
+                            type={showPassword ? "text" : "password"}
                             id="password"
                             className="peer w-full rounded border-gray-600 bg-gray-700 text-white p-2 placeholder-transparent focus:outline-none focus:ring-2 focus:ring-orange-600"
-                            placeholder="Enter Password"
+                            placeholder="Password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                         />
@@ -103,11 +105,18 @@ const Register = () => {
                         >
                             Password
                         </label>
+                        <button
+                            type="button"
+                            className="absolute right-2 top-3 text-gray-400 hover:text-orange-500"
+                            onClick={() => setShowPassword(!showPassword)}
+                        >
+                            {showPassword ? <EyeOffIcon size={18} /> : <EyeIcon size={18} />}
+                        </button>
                     </div>
 
                     <div className="relative">
                         <input
-                            type="password"
+                            type={showPassword ? "text" : "password"}
                             id="confirmPassword"
                             className="peer w-full rounded border-gray-600 bg-gray-700 text-white p-2 placeholder-transparent focus:outline-none focus:ring-2 focus:ring-orange-600"
                             placeholder="Confirm Password"
@@ -120,6 +129,13 @@ const Register = () => {
                         >
                             Confirm Password
                         </label>
+                        <button
+                            type="button"
+                            className="absolute right-2 top-3 text-gray-400 hover:text-orange-500"
+                            onClick={() => setShowPassword(!showPassword)}
+                        >
+                            {showPassword ? <EyeOffIcon size={18} /> : <EyeIcon size={18} />}
+                        </button>
                     </div>
 
                     <button
