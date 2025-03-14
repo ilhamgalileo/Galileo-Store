@@ -37,6 +37,13 @@ const userSchema = new mongoose.Schema(
       default: null,
     },
 
+    membership: {
+      type: String,
+      enum: ["None", "Silver", "Gold", "Platinum"],
+      default: "None",
+    },
+    totalSpent: { type: Number },
+
     shippingAddress: [
       {
         recipient: String,
@@ -51,6 +58,25 @@ const userSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+userSchema.methods.updateMembership = function () {
+  if (this.totalSpent >= 10000000) {
+    this.membership = "Platinum";
+  } else if (this.totalSpent >= 5000000) {
+    this.membership = "Gold";
+  } else if (this.totalSpent >= 1000000) {
+    this.membership = "Silver";
+  } else {
+    this.membership = "None";
+  }
+};
+
+userSchema.methods.getDiscount = function () {
+  if (this.membership === "Platinum") return 0.07;
+  if (this.membership === "Gold") return 0.05;
+  if (this.membership === "Silver") return 0.03;
+  return 0;
+};
 
 userSchema.pre("save", async function (next) {
   if (!this.isModified("password")) {
