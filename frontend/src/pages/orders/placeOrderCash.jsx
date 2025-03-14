@@ -27,30 +27,44 @@ const PlaceCashOrder = () => {
     cust_address: "",
   })
 
+  const formatCurrency = (value) => {
+    const numericValue = value.replace(/\D/g, "");
+    if (!numericValue) return "";
+
+    return new Intl.NumberFormat("id-ID").format(numericValue);
+  };
+
   const handleChange = (e) => {
-    const { name, value } = e.target
-    setCashDetails({ ...cashDetails, [name]: value });
-  }
+    const { name, value } = e.target;
+
+    if (name === "receivedAmount") {
+      setCashDetails({ ...cashDetails, [name]: formatCurrency(value) });
+    } else {
+      setCashDetails({ ...cashDetails, [name]: value });
+    }
+  };
 
   const placeOrderHandler = async () => {
     try {
-      if (!cashDetails.customerName || !cashDetails.phone || !cashDetails.cust_address || !cashDetails.receivedAmount) {
-        toast.error("Please fill in all required fields")
-        return
+      if (!cashDetails.receivedAmount) {
+        toast.error("Please fill Received Amount fields");
+        return;
       }
 
-      const receivedAmount = Number(cashDetails.receivedAmount);
+      // Remove formatting (commas) from receivedAmount
+      const receivedAmount = Number(cashDetails.receivedAmount.replace(/\D/g, ""));
+
       if (receivedAmount < totalPrice) {
         toast.error("Received amount must be greater than or equal to total price");
-        return
+        return;
       }
 
       const orderItems = cart.cartItems.map((item) => ({
         product: item._id,
         name: item.name,
         quantity: item.qty,
-        price: item.price
-      }))
+        price: item.price,
+      }));
 
       const res = await createCashOrder({
         customerName: cashDetails.customerName,
@@ -60,16 +74,16 @@ const PlaceCashOrder = () => {
         orderItems,
         discount,
         taxPrice,
-        totalAmount: totalPrice
-      }).unwrap()
+        totalAmount: totalPrice,
+      }).unwrap();
 
-      dispatch(clearCartItems())
-      toast.success("Order placed successfully!")
-      navigate(`/order/${res._id}/cash`)
+      dispatch(clearCartItems());
+      toast.success("Order placed successfully!");
+      navigate(`/order/${res._id}/cash`);
     } catch (error) {
       toast.error(error?.data?.message || "Order placement failed. Please try again.");
     }
-  }
+  };
 
   return (
     <div className="container mx-auto max-w-6xl">
@@ -141,40 +155,42 @@ const PlaceCashOrder = () => {
             <div className="bg-neutral-700 rounded-lg shadow-md p-6">
               <h2 className="text-xl font-semibold mb-4">Cash Order Details</h2>
               <div className="space-y-4">
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
+                    Rp
+                  </span>
+                  <input
+                    type="text"
+                    name="receivedAmount"
+                    value={cashDetails.receivedAmount}
+                    onChange={handleChange}
+                    placeholder="Received Amount"
+                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none"
+                    required
+                  />
+                </div>
                 <input
                   type="text"
                   name="customerName"
                   value={cashDetails.customerName}
                   onChange={handleChange}
-                  placeholder="Customer Name"
+                  placeholder="Customer Name (optional)"
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none"
-                  required
                 />
                 <input
                   type="number"
                   name="phone"
                   value={cashDetails.phone}
                   onChange={handleChange}
-                  placeholder="Phone Number"
+                  placeholder="Phone Number (optional)"
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none"
-                  required
-                />
-                <input
-                  type="number"
-                  name="receivedAmount"
-                  value={cashDetails.receivedAmount}
-                  onChange={handleChange}
-                  placeholder="Received Amount"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none"
-                  required
                 />
                 <textarea
-                  name="cust_address"
+                  name="cust_address (optional)"
                   value={cashDetails.cust_address}
                   onChange={handleChange}
-                  placeholder="Customer Address"
+                  placeholder="Customer Address (optional)"
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none h-32"
-                  required
                 />
               </div>
             </div>

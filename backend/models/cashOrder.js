@@ -2,8 +2,8 @@ import mongoose from "mongoose";
 
 const cashOrderSchema = mongoose.Schema(
   {
-    customerName: { type: String, required: true },
-    phone: { type: String, required: true },
+    customerName: { type: String, default: null },
+    phone: { type: String, default: null },
     address: { type: String, default: null },
     items: [
       {

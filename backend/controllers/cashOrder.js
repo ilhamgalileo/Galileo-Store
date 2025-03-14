@@ -9,16 +9,10 @@ export const createCashOrder = async (req, res) => {
     cust_address,
     orderItems,
     receivedAmount,
-    taxPrice,
   } = req.body;
 
   if (
-    !customerName ||
-    !phone ||
-    !cust_address ||
-    !orderItems ||
-    !receivedAmount ||
-    !taxPrice
+    !receivedAmount
   ) {
     return res.status(400).json({ message: "All fields are required" });
   }
