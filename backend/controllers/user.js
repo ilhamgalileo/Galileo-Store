@@ -42,6 +42,46 @@ export const register = asyncHandler(async (req, res) => {
   });
 });
 
+export const addAdminAccount = asyncHandler(async (req, res) => {
+  const { username, email, password, isAdmin } = req.body;
+
+  if (!username || !email || !password || !isAdmin) {
+    return res.status(400).json({
+      status: "error",
+      message: "Please fill in all fields",
+    });
+  }
+
+  if (password.length < 6) {
+    return res.status(400).json({
+      status: "error",
+      message: "Password must be at least 6 characters",
+    });
+  }
+
+  const existingUser = await User.findOne({ email });
+  if (existingUser) {
+    return res.status(400).json({
+      status: "error",
+      message: "Email existed, please create another",
+    });
+  }
+
+  const user = new User({ username, email, password, isAdmin });
+  await user.save();
+
+  res.status(201).json({
+    status: "success",
+    message: "Add Admin Successfully",
+    admin: {
+      _id: user._id,
+      username: user.username,
+      email: user.email,
+      isAdmin: user.isAdmin
+    },
+  });
+});
+
 export const login = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
 

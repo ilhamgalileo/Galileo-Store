@@ -33,6 +33,7 @@ import ProductsTable from './pages/admin/ProductsTable.jsx'
 import PlaceOrderStoreTransfer from './pages/orders/PlaceOrderStoreTransfer.jsx'
 import StoreOrder from './pages/orders/storeOrder.jsx'
 import OrderRecord from './pages/admin/orderRecord.jsx'
+import AdminRegister from './pages/admin/AdminRegister.jsx'
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -71,6 +72,7 @@ const router = createBrowserRouter(
         <Route path='product-record' element={<ProductsTable />} />
         <Route path='order-record' element={<OrderRecord />} />
         <Route path='userlist' element={<UserList />} />
+        <Route path='admin-register' element={<AdminRegister />} />
       </Route>
     </Route>
   )

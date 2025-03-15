@@ -11,7 +11,7 @@ import {
   AiOutlineProduct,
   AiOutlineUser,
 } from "react-icons/ai";
-import { FaHeart, FaListAlt, FaUserCircle } from "react-icons/fa";
+import { FaHeart, FaListAlt, FaUserCircle, FaUserTie } from "react-icons/fa";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import "./Navigation.css";
 import { useSelector, useDispatch } from "react-redux";
@@ -147,6 +147,14 @@ const Navigation = () => {
                 <AiOutlineUser className="mr-2 mt-[3rem]" size={20} color={getIconColor("/super-admin/userlist")} />
                 <span className="hidden nav-item-name mt-[3rem] text-sm">
                   User Management
+                </span>
+              </div>
+            </Link>
+            <Link to="/super-admin/admin-register" className="flex relative" onClick={closeDropdown}>
+              <div className="flex transition-transform transform hover:translate-x-2 duration-300 ease-in-out">
+                <FaUserTie className="mr-2 mt-[2rem]" size={20} color={getIconColor("/super-admin/admin-register")} />
+                <span className="hidden nav-item-name mt-[2rem] text-sm">
+                  Add Admin Account
                 </span>
               </div>
             </Link>

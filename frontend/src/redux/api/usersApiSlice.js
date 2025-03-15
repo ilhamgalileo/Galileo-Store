@@ -13,7 +13,7 @@ export const userApiSlice = apiSlice.injectEndpoints({
 
     logout: builder.mutation({
       query: () => ({
-        url: '/api/users/logout',
+        url: `${USERS_URL}/logout`,
         method: "POST",
       }),
     }),
@@ -21,6 +21,14 @@ export const userApiSlice = apiSlice.injectEndpoints({
     Register: builder.mutation({
       query: (data) => ({
         url: `${USERS_URL}/register`,
+        method: "POST",
+        body: data,
+      }),
+    }),
+
+    AddAdmin: builder.mutation({
+      query: (data) => ({
+        url: `${USERS_URL}/add-admin`,
         method: "POST",
         body: data,
       }),
@@ -36,24 +44,24 @@ export const userApiSlice = apiSlice.injectEndpoints({
     }),
 
     getUsers: builder.query({
-      query: () => '/api/users',
+      query: () => `${USERS_URL}`,
       providesTags: ['User'],
     }),
 
     getUserCount: builder.query({
-      query: () => '/api/users/count',
+      query: () => `${USERS_URL}/count`,
     }),
 
     deleteUser: builder.mutation({
       query: (userId) => ({
-        url: `/api/users/${userId}`,
+        url: `${USERS_URL}/${userId}`,
         method: "DELETE",
       }),
     }),
 
     markUserAsAdmin: builder.mutation({
       query: (userId) => ({
-        url: `/api/users/${userId}/as-admin`,
+        url: `${USERS_URL}/${userId}/as-admin`,
         method: "PUT",
       }),
     }),
@@ -87,6 +95,7 @@ export const {
   useLoginMutation,
   useLogoutMutation,
   useRegisterMutation,
+  useAddAdminMutation,
   useProfileMutation,
   useGetUserCountQuery,
   useGetUsersQuery,

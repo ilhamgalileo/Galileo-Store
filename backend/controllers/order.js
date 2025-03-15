@@ -192,7 +192,7 @@ export const getAllCombinedOrders = asyncHandler(async (req, res) => {
 
 export const getMyOrder = asyncHandler(async (req, res) => {
   const id = req.user._id;
-  const myOder = await Order.find({ user: id });
+  const myOder = await Order.find({ user: id }).sort({createdAt: -1});
   res.json(myOder);
 });
 

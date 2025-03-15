@@ -13,6 +13,7 @@ import silverLogo from '../../assets/silvermember.png';
 import nonmembericon from '../../assets/nonemember.png';
 import goldLogo from '../../assets/goldmember.png';
 import platinumLogo from '../../assets/memberplatinum.png';
+import moment from "moment";
 
 const UserList = () => {
   const { data: users, refetch, isLoading, error } = useGetUsersQuery();
@@ -107,6 +108,7 @@ const UserList = () => {
                 <th className="px-4 py-2 text-left">ID</th>
                 <th className="px-4 py-2 text-left">NAME</th>
                 <th className="px-4 py-2 text-left">EMAIL</th>
+                <th className="px-4 py-2 text-left">ADD AT</th>
                 <th className="px-4 py-2 text-left">Delete</th>
               </tr>
             </thead>
@@ -172,6 +174,7 @@ const UserList = () => {
                       </div>
                     )}
                   </td>
+                  <td className="px-4 py-2">{moment(admin.createdAt).format("YYYY-MM-DD")}</td>
                   <td className="px-4 py-2">
                     <div className="flex">
                       <button
