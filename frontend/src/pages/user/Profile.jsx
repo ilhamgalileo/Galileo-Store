@@ -87,7 +87,7 @@ const Profile = () => {
     };
 
     return (
-        <div className="container mx-auto p-4 max-w-lg">
+        <div className="container mx-auto p-5 max-w-lg">
             <div className="mb-[5rem] h-[9rem]">
                 {!userInfo.isAdmin && (
                     <>

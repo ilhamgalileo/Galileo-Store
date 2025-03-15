@@ -1,7 +1,7 @@
 import React from "react";
 import noneLogo from '../assets/nonemember.png';
 import silverLogo from '../assets/silvermember.png';
-import goldLogo from '../assets/goldmember.png'; 
+import goldLogo from '../assets/goldmember.png';
 import platinumLogo from '../assets/memberplatinum.png';
 
 const MembershipProgress = ({ totalSpent, membership }) => {
@@ -11,7 +11,8 @@ const MembershipProgress = ({ totalSpent, membership }) => {
     { name: "Gold", threshold: 5000000, icon: goldLogo },
     { name: "Platinum", threshold: 10000000, icon: platinumLogo },
   ];
-  const currentLevelIndex = levels.findIndex((level) => level.name === membership);
+
+  const currentLevelIndex = Math.max(0, levels.findIndex((level) => level.name === membership));
 
   const nextLevel = currentLevelIndex < levels.length - 1 ? levels[currentLevelIndex + 1] : null;
 
@@ -19,29 +20,28 @@ const MembershipProgress = ({ totalSpent, membership }) => {
   if (!nextLevel) {
     progress = 100;
   } else {
-    progress = (totalSpent / nextLevel.threshold) * 100;
+    const nextThreshold = nextLevel.threshold;
+    progress = Math.min(100, Math.max(0, (totalSpent / nextThreshold) * 105));
   }
 
   return (
     <div className="w-full max-w-4xl mx-auto text-gray-950">
-      <div className="flex justify-between items-center mb-2">
+      <div className="flex justify-between items-center mb-1">
         {levels.map((level, index) => (
-          <div key={level.name} className="text-center">
+          <div key={level.name} className="text-center mr-2">
             <img
               src={level.icon}
               alt={level.name}
-              className={`w-10 h-10 ${
-                index <= currentLevelIndex ? "opacity-100" : "opacity-50"
-              }`}
+              className={`w-10 h-10 ${index <= currentLevelIndex ? "opacity-100" : "opacity-20"}`}
             />
             <p className="text-sm">{level.name}</p>
           </div>
         ))}
       </div>
 
-      <div className="w-full bg-gray-200 rounded-full h-2.5">
+      <div className=" w-[100%] bg-gray-200 rounded-full h-2">
         <div
-          className="bg-blue-500 h-2.5 rounded-full"
+          className="bg-orange-500 h-2 rounded-full"
           style={{ width: `${progress}%` }}
         />
       </div>
@@ -49,7 +49,7 @@ const MembershipProgress = ({ totalSpent, membership }) => {
       <div className="mt-2 text-center">
         {nextLevel ? (
           <p>
-            {`Your spend: ${(totalSpent / 1000).toFixed(0)}k earn ${(nextLevel.threshold / 1000).toFixed(0)}k to ${nextLevel.name}`}
+            {`Your spend: ${(totalSpent / 1000).toFixed(0)}k, earn ${((nextLevel.threshold - totalSpent) / 1000).toFixed(0)}k to reach ${nextLevel.name}`}
           </p>
         ) : (
           <p>You have reached the highest level!</p>
