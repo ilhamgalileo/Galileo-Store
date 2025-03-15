@@ -206,7 +206,6 @@ const UserList = () => {
                   <th className="px-4 py-2 text-left">EMAIL</th>
                   <th className="px-4 py-2 text-left">MEMBER</th>
                   <th className="px-4 py-2 text-left">Delete</th>
-                  <th className="px-4 py-2 text-left">Make As Admin</th>
                 </tr>
               </thead>
               <tbody>
@@ -286,18 +285,6 @@ const UserList = () => {
                             className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
                           >
                             <FaTrash />
-                          </button>
-                        </div>
-                      )}
-                    </td>
-                    <td className="px-4 py-2">
-                      {!user.superAdmin && (
-                        <div className="flex">
-                          <button
-                            onClick={() => makeAdminHandler(user._id)}
-                            className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-                          >
-                            <FaIdBadge />
                           </button>
                         </div>
                       )}
