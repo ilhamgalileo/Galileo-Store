@@ -42,7 +42,7 @@ const userSchema = new mongoose.Schema(
       enum: ["None", "Silver", "Gold", "Platinum"],
       default: "None",
     },
-    totalSpent: { type: Number },
+    point: { type: Number },
 
     shippingAddress: [
       {
@@ -60,11 +60,11 @@ const userSchema = new mongoose.Schema(
 );
 
 userSchema.methods.updateMembership = function () {
-  if (this.totalSpent >= 10000000) {
+  if (this.point >= 10000000) {
     this.membership = "Platinum";
-  } else if (this.totalSpent >= 5000000) {
+  } else if (this.point >= 5000000) {
     this.membership = "Gold";
-  } else if (this.totalSpent >= 1000000) {
+  } else if (this.point >= 1000000) {
     this.membership = "Silver";
   } else {
     this.membership = "None";

@@ -4,7 +4,7 @@ import silverLogo from '../assets/silvermember.png';
 import goldLogo from '../assets/goldmember.png';
 import platinumLogo from '../assets/memberplatinum.png';
 
-const MembershipProgress = ({ totalSpent, membership }) => {
+const MembershipProgress = ({ point, membership }) => {
   const levels = [
     { name: "None", threshold: 0, icon: noneLogo },
     { name: "Silver", threshold: 1000000, icon: silverLogo },
@@ -21,14 +21,14 @@ const MembershipProgress = ({ totalSpent, membership }) => {
     progress = 100;
   } else {
     const nextThreshold = nextLevel.threshold;
-    progress = Math.min(100, Math.max(0, (totalSpent / nextThreshold) * 105));
+    progress = Math.min(100, Math.max(0, (point / nextThreshold) * 105));
   }
 
   return (
     <div className="w-full max-w-4xl mx-auto text-gray-950">
-      <div className="flex justify-between items-center mb-1">
+      <div className="flex justify-between items-center">
         {levels.map((level, index) => (
-          <div key={level.name} className="text-center mr-2">
+          <div key={level.name} className="text-center ml-1">
             <img
               src={level.icon}
               alt={level.name}
@@ -39,7 +39,7 @@ const MembershipProgress = ({ totalSpent, membership }) => {
         ))}
       </div>
 
-      <div className=" w-[100%] bg-gray-200 rounded-full h-2">
+      <div className="ml-1.5 w-full bg-gray-200 rounded-full h-2">
         <div
           className="bg-orange-500 h-2 rounded-full"
           style={{ width: `${progress}%` }}
@@ -49,7 +49,7 @@ const MembershipProgress = ({ totalSpent, membership }) => {
       <div className="mt-2 text-center">
         {nextLevel ? (
           <p>
-            {`Your spend: ${(totalSpent / 1000).toFixed(0)}k, earn ${((nextLevel.threshold - totalSpent) / 1000).toFixed(0)}k to reach ${nextLevel.name}`}
+            {`Your point: ${(point / 1000).toFixed(0)}, earn ${((nextLevel.threshold - point) / 1000).toFixed(0)} to reach ${nextLevel.name}`}
           </p>
         ) : (
           <p>You have reached the highest level!</p>

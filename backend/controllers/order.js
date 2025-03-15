@@ -192,7 +192,7 @@ export const getAllCombinedOrders = asyncHandler(async (req, res) => {
 
 export const getMyOrder = asyncHandler(async (req, res) => {
   const id = req.user._id;
-  const myOder = await Order.find({ user: id }).sort({ createdAt: -1 });
+  const myOder = await Order.find({ user: id });
   res.json(myOder);
 });
 
@@ -511,7 +511,7 @@ export const findOrderById = asyncHandler(async (req, res) => {
 export const markOrderIsPay = asyncHandler(async (req, res) => {
   const order = await Order.findById(req.params.id).populate(
     "user",
-    "totalSpent membership"
+    "point membership"
   );
 
   if (!order) {
@@ -553,7 +553,7 @@ export const markOrderIsPay = asyncHandler(async (req, res) => {
   await order.save();
 
   if (order.user) {
-    order.user.totalSpent = (order.user.totalSpent || 0) + order.totalPrice;
+    order.user.point = (order.user.point || 0) + order.totalPrice;
     order.user.updateMembership();
     await order.user.save();
   }
@@ -565,7 +565,7 @@ export const markOrderAsReturned = asyncHandler(async (req, res) => {
   const { returnedItems } = req.body;
   const order = await Order.findById(req.params.id).populate(
     "user",
-    "totalSpent membership"
+    "point"
   );
 
   if (!order) {
@@ -645,21 +645,10 @@ export const markOrderAsReturned = asyncHandler(async (req, res) => {
   await order.save();
 
   if (order.user) {
-    order.user.totalSpent = Math.max(
-      (order.user.totalSpent || 0) - totalRefund,
+    order.user.point = Math.max(
+      (order.user.point || 0) - totalRefund,
       0
     );
-
-    if (order.user.totalSpent > 10000000) {
-      order.user.membership = "Platinum";
-    } else if (order.user.totalSpent > 5000000) {
-      order.user.membership = "Gold";
-    } else if (order.user.totalSpent > 1000000) {
-      order.user.membership = "Silver";
-    } else {
-      order.user.membership = "None";
-    }
-
     await order.user.save();
   }
 

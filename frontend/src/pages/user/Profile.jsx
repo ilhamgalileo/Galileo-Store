@@ -21,7 +21,7 @@ const Profile = () => {
     const [updateProfile, { isLoading: loadingUpdateProfile }] = useProfileMutation();
     const { data: userProfile } = useGetUserProfileQuery();
     const membership = userProfile?.membership;
-    const totalSpent = userProfile?.totalSpent || 0;
+    const point = userProfile?.point || 0;
 
     useEffect(() => {
         if (userInfo) {
@@ -91,7 +91,7 @@ const Profile = () => {
             <div className="mb-[5rem] h-[9rem]">
                 {!userInfo.isAdmin && (
                     <>
-                        <MembershipProgress totalSpent={totalSpent} membership={membership} />
+                        <MembershipProgress point={point} membership={membership} />
 
                         {membership === 'None' ? (
                             <div className="flex items-center mt-5 justify-center gap-1">
