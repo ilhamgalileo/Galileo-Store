@@ -9,6 +9,10 @@ import {
   useMarkUserAsAdminMutation,
 } from "../../redux/api/usersApiSlice";
 import Message from "../../components/Message";
+import silverLogo from '../../assets/silvermember.png';
+import nonmembericon from '../../assets/nonemember.png';
+import goldLogo from '../../assets/goldmember.png';
+import platinumLogo from '../../assets/memberplatinum.png';
 
 const UserList = () => {
   const { data: users, refetch, isLoading, error } = useGetUsersQuery();
@@ -21,10 +25,24 @@ const UserList = () => {
   const [editableUserEmail, setEditableUserEmail] = useState("");
 
   const [updateUser] = useUpdateUserMutation();
+  const membership = users?.membership
 
   useEffect(() => {
     refetch();
   }, [refetch]);
+
+  const getMembershipLogo = (membership) => {
+    switch (membership) {
+      case "Platinum":
+        return platinumLogo;
+      case "Gold":
+        return goldLogo;
+      case "Silver":
+        return silverLogo;
+      case "None":
+        return nonmembericon;
+    }
+  };
 
   const deleteHandler = async (id) => {
     if (window.confirm("Are you sure")) {
@@ -186,6 +204,7 @@ const UserList = () => {
                   <th className="px-4 py-2 text-left">ID</th>
                   <th className="px-4 py-2 text-left">NAME</th>
                   <th className="px-4 py-2 text-left">EMAIL</th>
+                  <th className="px-4 py-2 text-left">MEMBER</th>
                   <th className="px-4 py-2 text-left">Delete</th>
                   <th className="px-4 py-2 text-left">Make As Admin</th>
                 </tr>
@@ -252,6 +271,13 @@ const UserList = () => {
                         </div>
                       )}
                     </td>
+                    <div className="flex items-center ml-7">
+                      <img
+                        src={getMembershipLogo(user.membership)}
+                        alt={`${membership} Member Logo`}
+                        className="w-11 h-11"
+                      />
+                    </div>
                     <td className="px-4 py-2">
                       {!user.superAdmin && (
                         <div className="flex">
