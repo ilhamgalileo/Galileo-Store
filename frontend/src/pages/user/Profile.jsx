@@ -89,25 +89,35 @@ const Profile = () => {
     return (
         <div className="container mx-auto p-4 max-w-lg">
             <div className="mb-[5rem] h-[9rem]">
-                <MembershipProgress totalSpent={totalSpent} membership={membership} />
-                {/* Sembunyikan jika membership adalah 'None' atau undefined */}
-                {membership && membership !== 'None' && (
-                    <div className="text-center">
-                        <div className="flex items-center mt-5 justify-center gap-1">
-                            <img
-                                src={getMembershipLogo(membership)}
-                                alt={`${membership} Member Logo`}
-                                className="w-11 h-11"
-                            />
-                            <h3 className={`text-xl font-semibold ${getMembershipTextColor(membership)}`}>
-                                Membership: {membership}
-                            </h3>
-                        </div>
-                        <p className="text-gray-600">Benefit: {getMembershipBenefits(membership)}</p>
-                    </div>
+                {!userInfo.isAdmin && (
+                    <>
+                        <MembershipProgress totalSpent={totalSpent} membership={membership} />
+
+                        {membership === 'None' ? (
+                            <div className="flex items-center mt-5 justify-center gap-1">
+                                <h2 className="text-2xl font-semibold text-gray-950 text-center">
+                                    You are now a regular account, earn and spend to receive interesting promotions.
+                                </h2>
+                            </div>
+                        ) : (
+                            <div className="text-center">
+                                <div className="flex items-center mt-5 justify-center gap-1">
+                                    <img
+                                        src={getMembershipLogo(membership)}
+                                        alt={`${membership} Member Logo`}
+                                        className="w-11 h-11"
+                                    />
+                                    <h3 className={`text-xl font-semibold ${getMembershipTextColor(membership)}`}>
+                                        Membership: {membership}
+                                    </h3>
+                                </div>
+                                <p className="text-gray-600">Benefit: {getMembershipBenefits(membership)}</p>
+                            </div>
+                        )}
+                    </>
                 )}
             </div>
-            <form onSubmit={submitHandler} className="space-y-4 bg-white p-6 rounded-lg shadow-lg">
+            <form onSubmit={submitHandler} className="space-y-4 ml- bg-white p-6 rounded-lg shadow-lg">
                 <div>
                     <label className="block text-gray-700 font-semibold mb-1">Name</label>
                     <input
@@ -161,9 +171,11 @@ const Profile = () => {
                 </div>
             </form>
             <div className="text-center mt-4">
-                <Link to="/user-orders" className="text-orange-600 font-semibold hover:underline">
-                    View My Orders
-                </Link>
+                {!userInfo.isAdmin && (
+                    <Link to="/user-orders" className="text-orange-600 font-semibold hover:underline">
+                        View My Orders
+                    </Link>
+                )}
             </div>
             {loadingUpdateProfile && <Loader />}
         </div>

@@ -192,7 +192,7 @@ export const getAllCombinedOrders = asyncHandler(async (req, res) => {
 
 export const getMyOrder = asyncHandler(async (req, res) => {
   const id = req.user._id;
-  const myOder = await Order.find({ user: id });
+  const myOder = await Order.find({ user: id }).sort({ createdAt: -1 });
   res.json(myOder);
 });
 
@@ -565,7 +565,7 @@ export const markOrderAsReturned = asyncHandler(async (req, res) => {
   const { returnedItems } = req.body;
   const order = await Order.findById(req.params.id).populate(
     "user",
-    "totalSpent"
+    "totalSpent membership"
   );
 
   if (!order) {
@@ -649,6 +649,17 @@ export const markOrderAsReturned = asyncHandler(async (req, res) => {
       (order.user.totalSpent || 0) - totalRefund,
       0
     );
+
+    if (order.user.totalSpent > 10000000) {
+      order.user.membership = "Platinum";
+    } else if (order.user.totalSpent > 5000000) {
+      order.user.membership = "Gold";
+    } else if (order.user.totalSpent > 1000000) {
+      order.user.membership = "Silver";
+    } else {
+      order.user.membership = "None";
+    }
+
     await order.user.save();
   }
 
