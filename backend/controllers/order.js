@@ -565,7 +565,7 @@ export const markOrderIsPay = asyncHandler(async (req, res) => {
 
 export const markOrderAsReturned = asyncHandler(async (req, res) => {
   const { returnedItems } = req.body;
-  const order = await Order.findById(req.params.id).populate("user", "point");
+  const order = await Order.findById(req.params.id).populate("user", "point membership");
 
   if (!order) {
     res.status(404);
@@ -578,6 +578,7 @@ export const markOrderAsReturned = asyncHandler(async (req, res) => {
   }
 
   let totalRefund = 0;
+  let weightRefund = 0;
 
   for (const returnedItem of returnedItems) {
     const { product, qty } = returnedItem;
@@ -606,16 +607,12 @@ export const markOrderAsReturned = asyncHandler(async (req, res) => {
     }
 
     productData.countInStock += qty;
-    productData.sold -= qty;
-
-    if (productData.sold < 0) {
-      productData.sold = 0;
-    }
-
+    productData.sold = Math.max(productData.sold - qty, 0);
     await productData.save();
 
     const refundAmount = item.price * qty;
     totalRefund += refundAmount;
+    weightRefund += (item.weight || 0) * qty;
 
     order.returnedItems.push({
       product: item.product,
@@ -631,20 +628,43 @@ export const markOrderAsReturned = asyncHandler(async (req, res) => {
     }
   }
 
+  const taxRefund = Math.round(totalRefund * 0.11);
+  totalRefund += taxRefund;
+
+  if (order.shippingPrice > 0) {
+    const totalWeight = order.orderItems.reduce(
+      (acc, item) => acc + (item.weight || 0) * item.qty,
+      0
+    );
+
+    const newShippingPrice =
+      totalWeight < 1000 ? 0 : Math.ceil(totalWeight / 1000) * 15000;
+
+    const shippingRefund = order.shippingPrice - newShippingPrice;
+    totalRefund += shippingRefund;
+    order.shippingPrice = newShippingPrice;
+  }
+
   order.totalPrice = Math.max(order.totalPrice - totalRefund, 0);
   order.returnAmount = (order.returnAmount || 0) + totalRefund;
 
   if (order.orderItems.length === 0) {
     order.isReturned = true;
     order.isPaid = false;
-    order.taxPrice = 0;
     order.totalPrice = 0;
+    order.taxPrice = 0;
+    order.itemsPrice= 0;
+    order.shippingPrice = 0;
   }
 
   await order.save();
 
   if (order.user) {
-    order.user.point = Math.max((order.user.point || 0) - totalRefund, 0);
+    const pointReduction = Math.round(totalRefund / 1000);
+    order.user.point = Math.max((order.user.point || 0) - pointReduction, 0);
+
+    order.user.updateMembership();
+
     await order.user.save();
   }
 
