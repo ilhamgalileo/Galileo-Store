@@ -21,7 +21,8 @@ const Shipping = () => {
   const { userInfo } = useSelector((state) => state.auth);
   const [saveAddress] = useSaveAddressMutation();
 
-  const { data: userData, isLoading: isLoadingAddress } = useGetAddressQuery(userInfo?.user?._id);
+  // Fetch alamat pengiriman dan tambahkan refetch
+  const { data: userData, isLoading: isLoadingAddress, refetch: refetchAddress } = useGetAddressQuery(userInfo.user?._id);
   const shippingAddress = userData?.shippingAddress?.[0];
 
   const { selectedProvince, selectedCity, selectedDistrict, selectedVillage } = useSelector(
@@ -43,6 +44,7 @@ const Shipping = () => {
   const { data: districts, isLoading: isLoadingDistricts } = useGetDistrictsQuery(selectedCity?.value || undefined, { skip: !selectedCity?.value });
   const { data: villages, isLoading: isLoadingVillages } = useGetVillagesQuery(selectedDistrict?.value || undefined, { skip: !selectedDistrict?.value });
 
+  // Update state saat shippingAddress berubah
   useEffect(() => {
     if (shippingAddress && !isLoadingAddress) {
       setQrisBankDetails((prev) => ({
@@ -54,9 +56,9 @@ const Shipping = () => {
     }
   }, [shippingAddress, isLoadingAddress, dispatch]);
 
+  // Set province saat data provinces dan shippingAddress tersedia
   useEffect(() => {
     if (shippingAddress && provinces?.data) {
-
       const provinceData = provinces.data.find(
         (province) => province.name === shippingAddress.province
       );
@@ -70,6 +72,7 @@ const Shipping = () => {
     }
   }, [shippingAddress, provinces?.data, dispatch]);
 
+  // Set city saat data cities dan shippingAddress tersedia
   useEffect(() => {
     if (shippingAddress && cities?.data) {
       const cityData = cities.data.find(
@@ -85,6 +88,7 @@ const Shipping = () => {
     }
   }, [shippingAddress, cities?.data, dispatch]);
 
+  // Set district saat data districts dan shippingAddress tersedia
   useEffect(() => {
     if (shippingAddress && districts?.data) {
       const districtData = districts.data.find(
@@ -100,6 +104,7 @@ const Shipping = () => {
     }
   }, [shippingAddress, districts?.data, dispatch]);
 
+  // Set village saat data villages dan shippingAddress tersedia
   useEffect(() => {
     if (shippingAddress && villages?.data) {
       const villageData = villages.data.find(
@@ -115,22 +120,7 @@ const Shipping = () => {
     }
   }, [shippingAddress, villages?.data, dispatch]);
 
-  // const InputField = ({ label, name, value, onChange, placeholder, readOnly = false }) => (
-  //   <div className="mb-4">
-  //     <label className="block text-gray-950 mb-2">{label}</label>
-  //     <input
-  //       type="text"
-  //       name={name}
-  //       value={value}
-  //       onChange={onChange}
-  //       placeholder={placeholder}
-  //       className="w-full p-2 h-[3rem] border rounded shadow-xl text-white bg-neutral-700"
-  //       required
-  //       readOnly={readOnly}
-  //     />
-  //   </div>
-  // );
-
+  // Fungsi untuk menangani tombol "Continue"
   const handleContinue = async () => {
     if (paymentMethod === "qris/bank") {
       const shippingDetails = {
@@ -148,12 +138,19 @@ const Shipping = () => {
       };
 
       try {
+        // Simpan alamat pengiriman
         await saveAddress({
-          userId: userInfo.user._id,
+          _id: userInfo.user._id,
           ...shippingDetails,
         }).unwrap();
 
+        // Fetch ulang data alamat pengiriman
+        await refetchAddress();
+
+        // Simpan metode pembayaran
         dispatch(savePaymentMethod(paymentMethod));
+
+        // Navigasi ke halaman placeorder
         navigate("/placeorder");
       } catch (error) {
         toast.error("Error saving address:");
@@ -167,6 +164,7 @@ const Shipping = () => {
     }
   };
 
+  // Format options untuk dropdown Select
   const formatOptions = (data) => {
     return data?.map((item) => ({
       value: item.code,
@@ -174,6 +172,7 @@ const Shipping = () => {
     })) || [];
   };
 
+  // Handle perubahan input untuk Qris/Bank
   const handleQrisBankChange = (e) => {
     setQrisBankDetails((prev) => ({
       ...prev,
@@ -181,21 +180,25 @@ const Shipping = () => {
     }));
   };
 
+  // Handle perubahan province
   const handleProvinceChange = (selectedOption) => {
     dispatch(setProvince(selectedOption));
     setQrisBankDetails((prev) => ({ ...prev, postalCode: "" }));
   };
 
+  // Handle perubahan city
   const handleCityChange = (selectedOption) => {
     dispatch(setCity(selectedOption));
     setQrisBankDetails((prev) => ({ ...prev, postalCode: "" }));
   };
 
+  // Handle perubahan district
   const handleDistrictChange = (selectedOption) => {
     dispatch(setDistrict(selectedOption));
     setQrisBankDetails((prev) => ({ ...prev, postalCode: "" }));
   };
 
+  // Handle perubahan village
   const handleVillageChange = (selectedOption) => {
     dispatch(setVillage(selectedOption));
     const villageData = villages?.data?.find((v) => v.code === selectedOption.value);
@@ -205,6 +208,7 @@ const Shipping = () => {
     }));
   };
 
+  // Tampilkan loading jika data sedang di-fetch
   if (isLoadingAddress) {
     return <div>Loading...</div>;
   }
@@ -268,7 +272,7 @@ const Shipping = () => {
           {paymentMethod === "qris/bank" && (
             <>
               <div className="mb-4">
-              <label className="block text-gray-950 mb-2">Recipient</label>
+                <label className="block text-gray-950 mb-2">Recipient</label>
                 <input
                   label="Recipient Package"
                   name="recipient"

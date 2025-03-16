@@ -4,13 +4,13 @@ const userSchema = new mongoose.Schema(
   {
     username: {
       type: String,
-      required: [true, "Nama harus diisi"],
+      required: [true, "username is required"],
       trim: true,
-      minlength: [3, "Nama harus memiliki setidaknya 3 karakter"],
+      minlength: [3, "name must have at least 3 character"],
     },
     email: {
       type: String,
-      required: [true, "Email harus diisi"],
+      required: [true, "Email is required"],
       unique: true,
       lowercase: true,
       trim: true,
@@ -18,7 +18,7 @@ const userSchema = new mongoose.Schema(
         validator: function (value) {
           return /^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(value);
         },
-        message: (props) => `${props.value} bukan format email yang valid`,
+        message: (props) => `${props.value} format email invalid`,
       },
     },
     password: {
@@ -42,7 +42,7 @@ const userSchema = new mongoose.Schema(
       enum: ["None", "Silver", "Gold", "Platinum"],
       default: "None",
     },
-    point: { type: Number },
+    point: { type: Number, default: 0 },
 
     shippingAddress: [
       {
@@ -60,11 +60,11 @@ const userSchema = new mongoose.Schema(
 );
 
 userSchema.methods.updateMembership = function () {
-  if (this.point >= 10000000) {
+  if (this.point >= 100000) {
     this.membership = "Platinum";
-  } else if (this.point >= 5000000) {
+  } else if (this.point >= 5000) {
     this.membership = "Gold";
-  } else if (this.point >= 1000000) {
+  } else if (this.point >= 1000) {
     this.membership = "Silver";
   } else {
     this.membership = "None";

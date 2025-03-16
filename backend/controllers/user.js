@@ -31,9 +31,28 @@ export const register = asyncHandler(async (req, res) => {
   const user = new User({ username, email, password });
   await user.save();
 
+  const token = jwt.sign(
+    {
+      _id: user._id,
+      name: user.username,
+      email: user.email,
+      superAdmin: user.superAdmin,
+      isAdmin: user.isAdmin,
+    },
+    process.env.JWT_SECRET,
+    { expiresIn: "7d" }
+  );
+
+  res.cookie("authToken", token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV !== "development",
+    maxAge: 30 * 24 * 60 * 60 * 1000,
+  });
+
   res.status(201).json({
     status: "success",
     message: "Registration Successfully",
+    token,
     user: {
       _id: user._id,
       username: user.username,
@@ -93,7 +112,7 @@ export const login = asyncHandler(async (req, res) => {
     });
   }
 
-  const isPasswordMatch = await bcrypt.compare(password, user.password);
+  const isPasswordMatch = bcrypt.compare(password, user.password);
   if (!isPasswordMatch) {
     return res.status(400).json({
       status: "error",
@@ -134,7 +153,7 @@ export const login = asyncHandler(async (req, res) => {
 });
 
 export const logout = asyncHandler(async (req, res) => {
-  res.cookie("jwt", "", {
+  res.cookie("authToken", "", {
     httpOnly: true,
     expires: new Date(0),
   });

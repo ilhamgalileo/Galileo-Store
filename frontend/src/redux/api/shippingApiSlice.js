@@ -19,7 +19,7 @@ export const shippingApiSlice = apiSlice.injectEndpoints({
       skip: (districtId) => !districtId,
     }),
     getAddress: builder.query({
-      query: (userId) => `${SHIPPING_URL}/${userId}/address`,
+      query: (id) => `${SHIPPING_URL}/${id}/address`,
     }),
     saveAddress: builder.mutation({
       query: (data) => ({
@@ -27,7 +27,6 @@ export const shippingApiSlice = apiSlice.injectEndpoints({
         method: "POST",
         body: data,
       }),
-      invalidatesTags: ["Shipping"],
     }),
   }),
 });
@@ -38,5 +37,5 @@ export const {
   useGetDistrictsQuery,
   useGetVillagesQuery,
   useGetAddressQuery,
-  useSaveAddressMutation
+  useSaveAddressMutation,
 } = shippingApiSlice;

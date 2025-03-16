@@ -35,6 +35,8 @@ const PlaceOrder = () => {
     discountRate = 0.05;
   } else if (membership === "Silver") {
     discountRate = 0.03;
+  } else {
+    discountRate = 0.00;
   }
 
   const discount = Math.round(itemsPrice * discountRate);
@@ -64,7 +66,7 @@ const PlaceOrder = () => {
       taxPrice: taxPrice,
       discount: discount,
       totalPrice: totalPrice,
-      membership: membership
+      membership: membership,
     }).unwrap();
 
     const token = res.token;
