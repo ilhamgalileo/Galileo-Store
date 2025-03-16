@@ -16,8 +16,11 @@ function calcPrice(orderItems, membership) {
     0
   );
 
-  const shippingPrice =
-    totalWeight < 1000 ? 0 : Math.ceil(totalWeight / 1000) * 15000;
+  let shippingPrice = 0;
+  if (membership !== "Platinum") {
+    shippingPrice =
+      totalWeight < 1000 ? 0 : Math.ceil(totalWeight / 1000) * 15000;
+  }
 
   let discountRate = 0;
   if (membership === "Platinum") {
@@ -565,7 +568,10 @@ export const markOrderIsPay = asyncHandler(async (req, res) => {
 
 export const markOrderAsReturned = asyncHandler(async (req, res) => {
   const { returnedItems } = req.body;
-  const order = await Order.findById(req.params.id).populate("user", "point membership");
+  const order = await Order.findById(req.params.id).populate(
+    "user",
+    "point membership"
+  );
 
   if (!order) {
     res.status(404);
@@ -653,7 +659,7 @@ export const markOrderAsReturned = asyncHandler(async (req, res) => {
     order.isPaid = false;
     order.totalPrice = 0;
     order.taxPrice = 0;
-    order.itemsPrice= 0;
+    order.itemsPrice = 0;
     order.shippingPrice = 0;
   }
 
