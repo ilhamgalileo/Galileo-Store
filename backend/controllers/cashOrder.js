@@ -1,6 +1,7 @@
 import asyncHandler from "../middlewares/asyncHandler.js";
 import CashOrder from "../models/cashOrder.js";
 import Product from "../models/product.js";
+import User from "../models/user.js";
 
 export const createCashOrder = async (req, res) => {
   const {
@@ -9,11 +10,11 @@ export const createCashOrder = async (req, res) => {
     cust_address,
     orderItems,
     receivedAmount,
+    email,
+    membership,
   } = req.body;
 
-  if (
-    !receivedAmount
-  ) {
+  if (!receivedAmount) {
     return res.status(400).json({ message: "All fields are required" });
   }
 
@@ -46,14 +47,22 @@ export const createCashOrder = async (req, res) => {
       });
     }
 
-    const totalAmountBeforeTax = calculatedTotal;
+    let discount = 0;
+    switch (membership) {
+      case "Platinum":
+        discount = calculatedTotal * 0.07;
+        break;
+      case "Gold":
+        discount = calculatedTotal * 0.05;
+        break;
+      case "Silver":
+        discount = calculatedTotal * 0.03;
+        break;
+      default:
+        discount = 0;
+    }
 
-    const taxPrice = 0.11 * totalAmountBeforeTax;
-
-    const discount =
-      totalAmountBeforeTax < 5000000 ? 0 : totalAmountBeforeTax * 0.10;
-
-    const totalAmount = totalAmountBeforeTax + taxPrice - discount;
+    const totalAmount = calculatedTotal - discount;
 
     if (receivedAmount < totalAmount) {
       return res.status(400).json({
@@ -63,17 +72,17 @@ export const createCashOrder = async (req, res) => {
     }
 
     const cashOrder = await CashOrder.create({
-      customerName,
+      customerName: email || customerName,
       phone,
       address: cust_address,
       items: validatedItems,
-      taxPrice,
       totalAmount,
       receivedAmount,
       discount,
       change: receivedAmount - totalAmount,
       isPaid: true,
       paidAt: new Date(),
+      membership,
     });
 
     for (const item of validatedItems) {
@@ -92,7 +101,6 @@ export const createCashOrder = async (req, res) => {
       _id: cashOrder._id,
       message: "Order created successfully",
       order: cashOrder,
-      taxPrice,
       discount,
       totalAmount,
     });
@@ -108,6 +116,17 @@ export const createCashOrder = async (req, res) => {
 export const getAllOrderCash = asyncHandler(async (req, res) => {
   const orders = await CashOrder.find({}).populate("items.product", "name");
   res.json({ orders });
+});
+
+export const getUserMembership = asyncHandler(async (req, res) => {
+  const { email } = req.params;
+
+  const user = await User.findOne({ email }).select("membership");
+
+  if (!user) {
+    return res.status(404).json({ message: "user not found" });
+  }
+  res.json({ membership: user.membership });
 });
 
 export const getCashOrderById = asyncHandler(async (req, res) => {
@@ -137,6 +156,15 @@ export const markOrderAsReturned = asyncHandler(async (req, res) => {
     res.status(400);
     throw new Error("Order has not been paid yet");
   }
+
+  const discountPercentage =
+    order.membership === "Platinum"
+      ? 0.07
+      : order.membership === "Gold"
+      ? 0.05
+      : order.membership === "Silver"
+      ? 0.03
+      : 0;
 
   let totalRefund = 0;
 
@@ -170,13 +198,18 @@ export const markOrderAsReturned = asyncHandler(async (req, res) => {
     productData.sold -= quantity;
     await productData.save();
 
-    const refundAmount = (item.price || 0) * quantity;
-    totalRefund += refundAmount;
+    const pricePerItem = item.price || 0;
+    const discountPerItem = pricePerItem * discountPercentage;
+    const discountedPricePerItem = pricePerItem - discountPerItem;
+
+    const refundAmountPerItem = Math.round(discountedPricePerItem * quantity);
+
+    totalRefund += refundAmountPerItem;
 
     order.returnedItems.push({
       product: item.product,
       name: item.name,
-      price: item.price,
+      price: discountedPricePerItem,
       quantity,
       returnedAt: new Date(),
     });
@@ -187,7 +220,18 @@ export const markOrderAsReturned = asyncHandler(async (req, res) => {
     }
   }
 
-  order.totalAmount = Math.max((order.totalAmount || 0) - totalRefund, 0);
+  const remainingItemsPrice = order.items.reduce(
+    (acc, item) => acc + item.price * item.quantity,
+    0
+  );
+
+  const newDiscountAmount = Math.round(
+    remainingItemsPrice * discountPercentage
+  );
+
+  order.totalAmount = Math.max(remainingItemsPrice - newDiscountAmount, 0);
+  order.discount = newDiscountAmount;
+
   order.returnAmount = Math.max((order.returnAmount || 0) + totalRefund, 0);
 
   if (order.items.length === 0) {

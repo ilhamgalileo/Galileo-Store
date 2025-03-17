@@ -5,6 +5,10 @@ const cashOrderSchema = mongoose.Schema(
     customerName: { type: String, default: null },
     phone: { type: String, default: null },
     address: { type: String, default: null },
+    membership: {
+      type: String,
+      enum: ["None", "Silver", "Gold", "Platinum"],
+    },
     items: [
       {
         product: {

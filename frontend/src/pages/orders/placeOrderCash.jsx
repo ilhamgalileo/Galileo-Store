@@ -1,31 +1,83 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { useDispatch, useSelector } from "react-redux";
 import Message from "../../components/Message";
 import ProgressSteps from "../../components/ProgressSteps";
 import Loader from "../../components/loader";
-import { useCreateCashOrderMutation } from "../../redux/api/orderApiSlice";
+import { useCreateCashOrderMutation, useGetMemberByEmailQuery } from "../../redux/api/orderApiSlice";
 import { clearCartItems } from "../../redux/features/cart/cartSlice";
 
 const PlaceCashOrder = () => {
-  const navigate = useNavigate()
-  const dispatch = useDispatch()
-  const cart = useSelector((state) => state.cart)
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const cart = useSelector((state) => state.cart);
 
-  const itemsPrice = cart.cartItems.reduce((acc, item) => acc + item.qty * item.price, 0) || 0
-  const taxPrice = Math.round(0.11 * itemsPrice)
-  const discount = itemsPrice < 5000000 ? 0 : Math.round(itemsPrice * 0.10)
-  const totalPrice = Math.round((itemsPrice + taxPrice - discount) || 0)
+  const itemsPrice = cart.cartItems.reduce((acc, item) => acc + item.qty * item.price, 0) || 0;
 
-  const [createCashOrder, { isLoading, error }] = useCreateCashOrderMutation()
+  const [membership, setMembership] = useState("None");
+  const [totalPrice, setTotalPrice] = useState(0);
+
+  const calculateDiscount = (itemsPrice, membership) => {
+    switch (membership) {
+      case "Platinum":
+        return Math.round(itemsPrice * 0.07); 
+      case "Gold":
+        return Math.round(itemsPrice * 0.05);
+      case "Silver":
+        return Math.round(itemsPrice * 0.03);
+      default:
+        return 0; 
+    }
+  };
+
+  useEffect(() => {
+    const discount = calculateDiscount(itemsPrice, membership);
+    const newTotalPrice = Math.round(itemsPrice - discount);
+    setTotalPrice(newTotalPrice);
+  }, [itemsPrice, membership]);
+
+  const [createCashOrder, { isLoading: isOrderLoading, error: orderError }] = useCreateCashOrderMutation();
   const [cashDetails, setCashDetails] = useState({
     customerName: "",
     phone: "",
     receivedAmount: "",
-    discount: "",
     cust_address: "",
-  })
+    email: "",
+  });
+
+  const [emailInput, setEmailInput] = useState("");
+  const [isCheckingMembership, setIsCheckingMembership] = useState(false);
+  const [emailToCheck, setEmailToCheck] = useState("");
+
+  const { data: membershipData, refetch, isError } = useGetMemberByEmailQuery(emailToCheck, {
+    skip: !emailToCheck,
+  });
+
+  const handleCheckMembership = async () => {
+    if (!emailInput) {
+      toast.error("Please enter an email address");
+      return;
+    }
+    setIsCheckingMembership(true);
+    setEmailToCheck(emailInput);
+    try {
+      await refetch();
+    } catch (error) {
+      if (isError) {
+        toast.error("Failed to check membership");
+      }
+    } finally {
+      setIsCheckingMembership(false);
+    }
+  };
+
+  useEffect(() => {
+    if (membershipData) {
+      setMembership(membershipData.membership);
+      toast.success(`Membership found: ${membershipData.membership}`);
+    }
+  }, [membershipData]);
 
   const formatCurrency = (value) => {
     const numericValue = value.replace(/\D/g, "");
@@ -44,6 +96,10 @@ const PlaceCashOrder = () => {
     }
   };
 
+  const handleEmailInputChange = (e) => {
+    setEmailInput(e.target.value);
+  };
+
   const placeOrderHandler = async () => {
     try {
       if (!cashDetails.receivedAmount) {
@@ -51,7 +107,6 @@ const PlaceCashOrder = () => {
         return;
       }
 
-      // Remove formatting (commas) from receivedAmount
       const receivedAmount = Number(cashDetails.receivedAmount.replace(/\D/g, ""));
 
       if (receivedAmount < totalPrice) {
@@ -66,6 +121,8 @@ const PlaceCashOrder = () => {
         price: item.price,
       }));
 
+      const discount = calculateDiscount(itemsPrice, membership);
+
       const res = await createCashOrder({
         customerName: cashDetails.customerName,
         phone: cashDetails.phone,
@@ -73,8 +130,9 @@ const PlaceCashOrder = () => {
         receivedAmount,
         orderItems,
         discount,
-        taxPrice,
         totalAmount: totalPrice,
+        email: emailInput,
+        membership,
       }).unwrap();
 
       dispatch(clearCartItems());
@@ -135,15 +193,25 @@ const PlaceCashOrder = () => {
                   <span>Items:</span>
                   <span>Rp{itemsPrice.toLocaleString()}</span>
                 </div>
-                <div className="flex justify-between text-white">
-                  <span>Tax (PPN 11%):</span>
-                  <span>Rp{taxPrice.toLocaleString()}</span>
-                </div>
-                {discount > 0 && (
-                  <div className="flex justify-between text-white">
-                    <span>Discount:</span>
-                    <span>Rp{discount.toLocaleString()}</span>
-                  </div>
+                {calculateDiscount(itemsPrice, membership) > 0 && (
+                  <>
+                    <div className="flex justify-between text-white">
+                      <span>Discount ({membership}):</span>
+                      <span>Rp{calculateDiscount(itemsPrice, membership).toLocaleString()}</span>
+                    </div>
+                    <div
+                      className={`text-sm font-medium ${membership === "Platinum"
+                          ? "text-purple-500"
+                          : membership === "Gold"
+                            ? "text-yellow-500"
+                            : membership === "Silver"
+                              ? "text-gray-400"
+                              : "text-white"
+                        }`}
+                    >
+                      Members with {membership} level receive a discount of {membership === "Platinum" ? "7%" : membership === "Gold" ? "5%" : "3%"}.
+                    </div>
+                  </>
                 )}
                 <div className="flex justify-between font-semibold text-lg pt-3 border-t border-gray-200">
                   <span>Total:</span>
@@ -155,6 +223,22 @@ const PlaceCashOrder = () => {
             <div className="bg-neutral-700 rounded-lg shadow-md p-6">
               <h2 className="text-xl font-semibold mb-4">Cash Order Details</h2>
               <div className="space-y-4">
+                <div className="flex gap-2">
+                  <input
+                    type="email"
+                    value={emailInput}
+                    onChange={handleEmailInputChange}
+                    placeholder="Enter customer email"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none"
+                  />
+                  <button
+                    onClick={handleCheckMembership}
+                    disabled={isCheckingMembership}
+                    className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isCheckingMembership ? "Checking..." : "Check Membership"}
+                  </button>
+                </div>
                 <div className="relative">
                   <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
                     Rp
@@ -198,17 +282,17 @@ const PlaceCashOrder = () => {
 
           <button
             onClick={placeOrderHandler}
-            disabled={isLoading}
+            disabled={isOrderLoading}
             className="w-full bg-orange-500 hover:bg-orange-600 text-white py-3 px-4 rounded-lg font-semibold transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isLoading ? <Loader /> : "Place Order with Cash"}
+            {isOrderLoading ? <Loader /> : "Place Order with Cash"}
           </button>
 
-          {error && <Message variant="danger">{error.data?.message}</Message>}
+          {orderError && <Message variant="danger">{orderError.data?.message}</Message>}
         </div>
       )}
     </div>
-  )
-}
+  );
+};
 
-export default PlaceCashOrder
+export default PlaceCashOrder;

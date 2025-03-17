@@ -157,7 +157,7 @@ const Order = () => {
                 <table className="table-auto w-full text-gray-800 border-collapse">
                   <thead className="border-b-2 border-gray-400">
                     <tr>
-                      {userInfo.user?.superAdmin && (
+                      {userInfo.user?.isAdmin && (
                         <th>
                           <input
                             type="checkbox"
@@ -176,7 +176,7 @@ const Order = () => {
                   <tbody className="text-gray-900 text-sm">
                     {order?.orderItems.map((item, index) => (
                       <tr key={index} className="text-center">
-                        {userInfo.user.superAdmin && (
+                        {userInfo.user.isAdmin&& (
                           <td className="p-2">
                             <input
                               type="checkbox"
@@ -308,7 +308,7 @@ const Order = () => {
           </div>
         )}
 
-        {userInfo.user.superAdmin && order.isPaid && (
+        {userInfo.user.isAdmin && order.isPaid && (
           <div className="mt-6">
             <button
               type="button"

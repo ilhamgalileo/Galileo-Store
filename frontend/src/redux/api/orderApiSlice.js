@@ -172,6 +172,10 @@ export const orderApiSlice = apiSlice.injectEndpoints({
     getTotalSalesByWeek: builder.query({
       query: () => `${ORDERS_URL}/total-sales-by-week`,
     }),
+
+    getMemberByEmail: builder.query({
+      query: (email) => `${CASH_ORDERS_URL}/${email}/membership`,
+    }),
   }),
 });
 
@@ -200,5 +204,6 @@ export const {
   useReturnStoreOrderMutation,
   useGetOrdersQuery,
   useGetAllOrdersQuery,
+  useGetMemberByEmailQuery,
   useReturnCashOrderMutation,
 } = orderApiSlice;

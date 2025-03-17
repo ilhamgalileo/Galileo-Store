@@ -51,21 +51,21 @@ const CashOrder = () => {
 
   const handleDownloadPDF = useCallback(async () => {
     if (!invoiceRef.current) return;
-  
+
     setShowDownloadButton(false);
-  
+
     const canvas = await html2canvas(invoiceRef.current, { scale: 2, useCORS: true });
     const imgData = canvas.toDataURL("image/png");
     const pdf = new jsPDF("p", "mm", "a4");
     const pageWidth = pdf.internal.pageSize.getWidth();
     const pageHeight = pdf.internal.pageSize.getHeight();
-  
+
     pdf.setFillColor(240, 240, 239);
     pdf.rect(0, 0, pageWidth, pageHeight, "F");
-  
+
     const imgWidth = 180;
     const imgHeight = (canvas.height * imgWidth) / canvas.width;
-  
+
     pdf.addImage(imgData, "PNG", 20, 25, imgWidth, imgHeight);
     pdf.save(`invoice-${orderId}.pdf`);
   }, [orderId]);
@@ -129,12 +129,12 @@ const CashOrder = () => {
   ) : (
     <div className="min-h-screen">
       <div className="flex justify-end sticky top-0 z-0">
-          {showDownloadButton && (
-            <button onClick={handleDownloadPDF} className="bg-blue-500 text-sm text-white font-bold px-2 py-2 mr-7 rounded-full">
-              <FaDownload/>
-            </button>
-          )}
-        </div>
+        {showDownloadButton && (
+          <button onClick={handleDownloadPDF} className="bg-blue-500 text-sm text-white font-bold px-2 py-2 mr-7 rounded-full">
+            <FaDownload />
+          </button>
+        )}
+      </div>
       <div ref={invoiceRef} className="container mx-auto max-w-[85%] ml-[9%] mt-[1rem] relative bg-[#f0f0ef]">
         <div className="w-full p-2 relative">
           <img src={logo} alt="Logo" className="absolute top-0 md:top-0 left-2 w-[6rem] md:w-[12rem] h-auto" />
@@ -152,8 +152,12 @@ const CashOrder = () => {
 
             <div className="text-gray-900 absolute md:top-[9.5rem]  right-[1rem] md:right-[7rem] text-xs md:text-sm">
               <h3 className="text-xs md:text-xl font-bold mb-0.5 md:mb-2.5">Published for: </h3>
-              <p className="mb-1">Buyer: {cashOrder.customerName}</p>
-              <p className="mb-1">Address: {cashOrder.address}</p>
+              {cashOrder.customerName && (
+                <p className="mb-1">Buyer: {cashOrder.customerName}</p>
+              )}
+              {cashOrder.address && (
+                <p className="mb-1">Address: {cashOrder.address}</p>
+              )}
               <p className="mb-1">Method: {cashOrder.paymentMethod}</p>
             </div>
           </div>
@@ -165,7 +169,7 @@ const CashOrder = () => {
                 <table className="table-auto w-full text-gray-800 border-collapse">
                   <thead className="border-b-2 border-gray-400">
                     <tr className="text-xs md:text-sm">
-                      {userInfo.user?.superAdmin && (
+                      {userInfo.user?.isAdmin && (
                         <th>
                           <input
                             type="checkbox"
@@ -184,7 +188,7 @@ const CashOrder = () => {
                   <tbody>
                     {cashOrder.items.map((item, index) => (
                       <tr key={index} className="text-center md:text-sm text-xs text-gray-950">
-                        {userInfo.user.superAdmin && (
+                        {userInfo.user.isAdmin && (
                           <td className="p-2">
                             <input
                               type="checkbox"
@@ -200,7 +204,7 @@ const CashOrder = () => {
                           </Link>
                         </td>
                         <td className="p-2">
-                          {userInfo.user.superAdmin && selectedItems.some((selected) => selected.product === item.product) ? (
+                          {userInfo.user.isAdmin && selectedItems.some((selected) => selected.product === item.product) ? (
                             <input
                               type="number"
                               min="1"
@@ -282,14 +286,6 @@ const CashOrder = () => {
               <div className="p-4 rounded-lg text-gray-800">
                 <h3 className="text-sm md:text-lg font-medium mb-1.5">Summary: </h3>
                 <div className="flex justify-between mb-1">
-                  <span>Total Amount:</span>
-                  <span>Rp{new Intl.NumberFormat('id-ID').format(cashOrder.totalAmount)}</span>
-                </div>
-                <div className="flex justify-between mb-1">
-                  <span>TAX (PPN 11%):</span>
-                  <span>Rp{new Intl.NumberFormat('id-ID').format(cashOrder.taxPrice)}</span>
-                </div>
-                <div className="flex justify-between mb-1">
                   <span>Received Amount:</span>
                   <span>Rp{new Intl.NumberFormat('id-ID').format(cashOrder.receivedAmount)}</span>
                 </div>
@@ -300,6 +296,10 @@ const CashOrder = () => {
                   </div>
                 )}
                 <div className="flex justify-between font-bold mt-2 pt-2 border-t border-black">
+                  <span>Total Amount:</span>
+                  <span>Rp{new Intl.NumberFormat('id-ID').format(cashOrder.totalAmount)}</span>
+                </div>
+                <div className="flex justify-between font-bold mt-2 pt-2 border-t border-black">
                   <span>Change:</span>
                   <span>Rp{new Intl.NumberFormat('id-ID').format(cashOrder.change)}</span>
                 </div>
@@ -308,7 +308,7 @@ const CashOrder = () => {
           </div>
         </div>
 
-        {userInfo.user.superAdmin && cashOrder.isPaid && (
+        {userInfo.user.isAdmin && cashOrder.isPaid && (
           <div className="mt-6">
             <button
               type="button"
