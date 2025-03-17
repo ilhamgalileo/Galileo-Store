@@ -14,6 +14,8 @@ import {
 } from "../../redux/api/orderApiSlice";
 import OrderList from "./OrderList";
 import Loader from "../../components/loader";
+import { toast } from 'react-toastify'
+import { useBackupDatabaseMutation } from "../../redux/api/backupApiSlice";
 import { FaUser, FaMoneyBill, FaShoppingBag, FaChartLine, FaCalendar, FaCalendarAlt, FaMoneyBillAlt } from "react-icons/fa";
 
 const StatBox = ({ title, value, icon, loading }) => (
@@ -87,6 +89,7 @@ const generateAllYears = (startYear, endYear) => {
 };
 
 const AdminDashboard = () => {
+  const [backupDatabase, { isLoading: isBackingUp }] = useBackupDatabaseMutation();
   const [timeRange, setTimeRange] = useState("daily")
 
   const { data: sales, isLoading: loadingSales } = useGetTotalSalesQuery();
@@ -97,6 +100,24 @@ const AdminDashboard = () => {
   const { data: salesDetailMonthly } = useGetTotalSalesByMonthQuery();
   const { data: salesDetailYearly } = useGetTotalSalesByYearQuery();
   const { data: income } = useGetIncomeQuery();
+
+  useEffect(() => {
+    const now = new Date();
+    const currentDate = now.getDate();
+
+    if (currentDate === 1) {
+      handleBackup();
+    }
+  }, []);
+
+  const handleBackup = async () => {
+    try {
+      await backupDatabase().unwrap();
+      toast.success("Backup Successfully!");
+    } catch (error) {
+      toast.error("Backup Failed!");
+    }
+  };
 
   const salesDetail =
     timeRange === "daily" ? salesDetailDaily :
@@ -274,6 +295,13 @@ const AdminDashboard = () => {
               <FaCalendar className="text-gray-800" />
               <span>{new Date().toLocaleDateString("en-US", { month: "long", year: "numeric" })}</span>
             </div>
+            <button
+              onClick={handleBackup}
+              disabled={isBackingUp}
+              className="bg-orange-500 text-white px-4 py-2 rounded-lg shadow-md hover:bg-orange-600 transition"
+            >
+              {isBackingUp ? "Backing up..." : "Backup Data"}
+            </button>
           </div>
         </div>
 
@@ -286,7 +314,7 @@ const AdminDashboard = () => {
           />
           <StatBox
             title="Total Income"
-            value={`Rp ${new Intl.NumberFormat("id-ID").format(income?.totalIncome)}`} 
+            value={`Rp ${new Intl.NumberFormat("id-ID").format(income?.totalIncome)}`}
             icon={<FaMoneyBillAlt />}
             loading={loadingOrders}
           />

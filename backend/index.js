@@ -12,6 +12,7 @@ import order from "./routes/order.js";
 import cashOrder from "./routes/cashOrder.js"
 import orderStore from "./routes/orderStore.js"
 import shipping from "./routes/shipping.js"
+import backup from "./routes/backup.js"
 
 dotenv.config()
 const port = process.env.PORT || 5000
@@ -28,6 +29,7 @@ app.use("/api/users", user)
 app.use("/api/category", category)
 app.use("/api/products", product)
 app.use("/api/uploads", upload)
+app.use("/api/backup", backup)
 app.use("/api/orders", order)
 app.use("/api/orders/cash", cashOrder)
 app.use("/api/orders/store", orderStore)
