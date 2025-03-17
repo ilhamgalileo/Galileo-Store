@@ -20,6 +20,7 @@ const StoreOrder = () => {
     const [selectedItems, setSelectedItems] = useState([]);
     const [editedQuantities, setEditedQuantities] = useState({});
     const [selectAll, setSelectAll] = useState(false);
+    const [hideElements, setHideElements] = useState(false);
 
     useEffect(() => {
         refetch();
@@ -27,18 +28,37 @@ const StoreOrder = () => {
 
     const handleDownloadPDF = useCallback(async () => {
         if (!invoiceRef.current) return;
-        const canvas = await html2canvas(invoiceRef.current, { scale: 2, useCORS: true });
-        const imgData = canvas.toDataURL("image/png");
-        const pdf = new jsPDF("p", "mm", "a4");
-        const pageWidth = pdf.internal.pageSize.getWidth();
-        const pageHeight = pdf.internal.pageSize.getHeight();
-        pdf.setFillColor(240, 240, 239);
-        pdf.rect(0, 0, pageWidth, pageHeight, "F");
-        const imgWidth = 180;
-        const imgHeight = (canvas.height * imgWidth) / canvas.width;
-        pdf.addImage(imgData, "PNG", 20, 25, imgWidth, imgHeight);
-        pdf.save(`invoice-${orderId}.pdf`);
+
+        setHideElements(true)
+
+        setTimeout(async () => {
+            const canvas = await html2canvas(invoiceRef.current, { scale: 2, useCORS: true });
+            const imgData = canvas.toDataURL("image/png");
+            const pdf = new jsPDF("p", "mm", "a4");
+            const pageWidth = pdf.internal.pageSize.getWidth();
+            const pageHeight = pdf.internal.pageSize.getHeight();
+            pdf.setFillColor(240, 240, 239);
+            pdf.rect(0, 0, pageWidth, pageHeight, "F");
+            const imgWidth = 180;
+            const imgHeight = (canvas.height * imgWidth) / canvas.width;
+            pdf.addImage(imgData, "PNG", 20, 25, imgWidth, imgHeight);
+            pdf.save(`invoice-${orderId}.pdf`);
+            setHideElements(false);
+        }, 500);
     }, [orderId]);
+
+    useEffect(() => {
+        const handleBeforePrint = () => setHideElements(true);
+        const handleAfterPrint = () => setHideElements(false);
+
+        window.addEventListener("beforeprint", handleBeforePrint);
+        window.addEventListener("afterprint", handleAfterPrint);
+
+        return () => {
+            window.removeEventListener("beforeprint", handleBeforePrint);
+            window.removeEventListener("afterprint", handleAfterPrint);
+        };
+    }, []);
 
     const toggleSelectAll = () => {
         if (selectAll) {
@@ -100,7 +120,8 @@ const StoreOrder = () => {
         <div className="min-h-screen">
             <div className="container mx-auto max-w-[85%] ml-[9%] mt-[1rem] relative">
                 <div className="flex justify-end sticky z-0">
-                    <button onClick={handleDownloadPDF} className="bg-blue-500 text-sm text-white font-bold px-2 py-2 mr-7 rounded-full">
+                    <button onClick={handleDownloadPDF}
+                        className={`bg-blue-500 text-sm text-white font-bold px-2 py-2 mr-7 rounded-full ${hideElements ? "hidden" : ""}`}>
                         <FaDownload />
                     </button>
                 </div>
@@ -133,7 +154,7 @@ const StoreOrder = () => {
                                                         type="checkbox"
                                                         checked={selectAll}
                                                         onChange={toggleSelectAll}
-                                                        className="w-6 h-5 mt-2 cursor-pointer"
+                                                        className={`w-6 h-5 mt-2 cursor-pointer ${hideElements ? "hidden" : ""}`}
                                                     />
                                                 </th>
                                             )}
@@ -150,7 +171,7 @@ const StoreOrder = () => {
                                                     <td className="p-2">
                                                         <input
                                                             type="checkbox"
-                                                            className="w-6 h-5 mt-1 cursor-pointer"
+                                                            className={`w-6 h-5 mt-1 cursor-pointer ${hideElements ? "hidden" : ""}`}
                                                             checked={selectedItems.some((selected) => selected.product === item.product)}
                                                             onChange={() => toggleItemSelection(item)}
                                                         />
@@ -269,7 +290,7 @@ const StoreOrder = () => {
                     <div className="mt-6">
                         <button
                             type="button"
-                            className="bg-red-500 text-white w-full py-2 rounded"
+                            className={`bg-red-500 text-white w-full py-2 rounded ${hideElements ? "hidden" : ""}`}
                             onClick={returnHandler}
                             disabled={loadingReturn}
                         >
