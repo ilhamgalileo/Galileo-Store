@@ -20,6 +20,7 @@ const Order = () => {
   const [selectedItems, setSelectedItems] = useState([]);
   const [editedQuantities, setEditedQuantities] = useState({});
   const [selectAll, setSelectAll] = useState(false);
+  const [hideElements, setHideElements] = useState(false);
 
   useEffect(() => {
     refetch();
@@ -56,16 +57,36 @@ const Order = () => {
 
   const handleDownloadPDF = useCallback(async () => {
     if (!invoiceRef.current) return;
-    const canvas = await html2canvas(invoiceRef.current, { scale: 1.8, useCORS: true });
-    const imgData = canvas.toDataURL("image/png");
-    const pdf = new jsPDF("p", "mm", "a4");
-    const pageWidth = pdf.internal.pageSize.getWidth();
-    const pageHeight = pdf.internal.pageSize.getHeight();
-    pdf.setFillColor(240, 240, 239)
-    pdf.rect(0, 0, pageWidth, pageHeight, "F")
-    pdf.addImage(imgData, "PNG", 20, 20, 171, (canvas.height * 171) / canvas.width);
-    pdf.save(`invoice-${orderId}.pdf`);
+
+    setHideElements(true)
+
+    setTimeout(async () => {
+      const canvas = await html2canvas(invoiceRef.current, { scale: 1.8, useCORS: true });
+      const imgData = canvas.toDataURL("image/png");
+      const pdf = new jsPDF("p", "mm", "a4");
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      pdf.setFillColor(240, 240, 239)
+      pdf.rect(0, 0, pageWidth, pageHeight, "F")
+      pdf.addImage(imgData, "PNG", 20, 20, 171, (canvas.height * 171) / canvas.width);
+      pdf.save(`invoice-${orderId}.pdf`);
+
+      setHideElements(false);
+    }, 500);
   }, [orderId]);
+
+  useEffect(() => {
+    const handleBeforePrint = () => setHideElements(true);
+    const handleAfterPrint = () => setHideElements(false);
+
+    window.addEventListener("beforeprint", handleBeforePrint);
+    window.addEventListener("afterprint", handleAfterPrint);
+
+    return () => {
+      window.removeEventListener("beforeprint", handleBeforePrint);
+      window.removeEventListener("afterprint", handleAfterPrint);
+    };
+  }, []);
 
   const deliverHandler = async () => {
     try {
@@ -108,7 +129,9 @@ const Order = () => {
     <div className="min-h-screen">
       <div className="container mx-auto max-w-[85%] ml-[9%] mt-[1rem] relative">
         <div className="flex justify-end sticky top-0 z-10 bg-[#f0f0ef]">
-          <button onClick={handleDownloadPDF} className="bg-blue-500 text-sm text-white font-bold px-1.5 py-1 rounded-lg">
+          <button onClick={handleDownloadPDF}
+            className={`bg-blue-500 text-sm text-white font-bold px-1.5 py-1 rounded-lg ${hideElements ? "hidden" : ""}`}
+          >
             Download
           </button>
         </div>
@@ -163,7 +186,7 @@ const Order = () => {
                             type="checkbox"
                             checked={selectAll}
                             onChange={toggleSelectAll}
-                            className="w-6 h-5 mt-2 cursor-pointer"
+                            className={`w-6 h-5 mt-2 cursor-pointer ${hideElements ? "hidden" : ""}`}
                           />
                         </th>
                       )}
@@ -176,11 +199,11 @@ const Order = () => {
                   <tbody className="text-gray-900 text-sm">
                     {order?.orderItems.map((item, index) => (
                       <tr key={index} className="text-center">
-                        {userInfo.user.isAdmin&& (
+                        {userInfo.user.isAdmin && (
                           <td className="p-2">
                             <input
                               type="checkbox"
-                              className="w-6 h-5 mt-1 cursor-pointer"
+                              className={`w-6 h-5 mt-1 cursor-pointer ${hideElements ? "hidden" : ""}`}
                               checked={selectedItems.some((selected) => selected.product === item.product)}
                               onChange={() => toggleItemSelection(item)}
                             />
@@ -294,13 +317,12 @@ const Order = () => {
             </div>
           </div>
         </div>
-
         {loadingDeliver && <Loader />}
         {userInfo && userInfo.user?.isAdmin && order.isPaid && !order.isDelivered && (
           <div className="mt-6">
             <button
               type="button"
-              className="bg-orange-500 text-white w-full py-2 rounded"
+              className={`bg-orange-500 text-white w-full py-2 rounded ${hideElements ? "hidden" : ""}`}
               onClick={deliverHandler}
             >
               Mark As Delivered
@@ -312,7 +334,7 @@ const Order = () => {
           <div className="mt-6">
             <button
               type="button"
-              className="bg-red-500 text-white w-full py-2 rounded"
+              className={`bg-red-500 text-white w-full py-2 rounded ${hideElements ? "hidden" : ""}`}
               onClick={returnHandler}
               disabled={loadingReturn}
             >
