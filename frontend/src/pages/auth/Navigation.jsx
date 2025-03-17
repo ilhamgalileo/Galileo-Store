@@ -115,10 +115,10 @@ const Navigation = () => {
                 <span className="hidden nav-item-name mt-[3rem] text-sm">Dashboard</span>
               </div>
             </Link>
-            <Link to="/admin/category" className="flex relative" onClick={closeDropdown}>
+            <Link to="/admin/product/create" className="flex relative" onClick={closeDropdown}>
               <div className="flex transition-transform transform hover:translate-x-2 duration-300 ease-in-out">
-                <FaListAlt className="mr-2 mt-[3rem]" size={20} color={getIconColor("/admin/category")} />
-                <span className="hidden nav-item-name mt-[3rem] text-sm">Category</span>
+                <FaListAlt className="mr-2 mt-[3rem]" size={20} color={getIconColor("/admin/product/create")} />
+                <span className="hidden nav-item-name mt-[3rem] text-sm">Create Product</span>
               </div>
             </Link>
           </>

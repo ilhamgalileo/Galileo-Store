@@ -118,6 +118,7 @@ export const createProduct = asyncHandler(async (req, res) => {
     description,
     price,
     countInStock,
+    purchasePrice,
     weight,
   } = req.body;
 
@@ -138,6 +139,7 @@ export const createProduct = asyncHandler(async (req, res) => {
     countInStock,
     price,
     weight,
+    purchasePrice,
     images: imagePaths,
   });
 

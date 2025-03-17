@@ -1,27 +1,15 @@
-import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import {
-  useDeleteProductMutation,
-  useGetProductByIdQuery,
-  useUploadProductImageMutation,
-  useUpdateProductMutation,
-  useDeleteProductImageMutation,
+  useCreateProductMutation,
 } from "../../redux/api/productApiSlice";
 import { useFetchCateQuery } from "../../redux/api/categoryApiSlice";
 import { toast } from "react-toastify";
+import Loader from "../../components/loader";
 
-const ProductUpdate = () => {
-  const params = useParams();
-  const navigate = useNavigate();
-
-  const { data: productData } = useGetProductByIdQuery(params.id);
-  const { data: categories = [] } = useFetchCateQuery();
-  const [uploadProductImage] = useUploadProductImageMutation();
-  const [updateProduct] = useUpdateProductMutation();
-  const [deleteProduct] = useDeleteProductMutation();
-  const [deleteImage] = useDeleteProductImageMutation();
-
-  const [newFiles, setNewFiles] = useState([]);
+const ProductCreate = () => {
+  const [images, setImages] = useState([]);
+  const [imageFiles, setImageFiles] = useState([]);
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -35,22 +23,29 @@ const ProductUpdate = () => {
     images: [],
   });
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
+  const [createProduct] = useCreateProductMutation();
+  const { data: categories } = useFetchCateQuery();
+
+  // Fungsi untuk memformat angka ke format Rupiah dengan "Rp"
   const formatToRupiah = (value) => {
     if (!value) return "Rp ";
     return `Rp ${value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")}`;
   };
 
+  // Fungsi untuk menghapus format Rupiah dan mengembalikan angka
   const removeRupiahFormat = (value) => {
     if (!value) return "";
     return value.replace(/[^0-9]/g, "");
   };
 
+  // Handle perubahan input
   const handleInputChange = (e) => {
     const { name, value } = e.target;
 
     if (name === "price" || name === "purchasePrice") {
-      const numericValue = removeRupiahFormat(value); 
+      const numericValue = removeRupiahFormat(value); // Hapus format Rupiah
       setFormData((prev) => ({
         ...prev,
         [name]: numericValue,
@@ -63,133 +58,89 @@ const ProductUpdate = () => {
     }
   };
 
-  useEffect(() => {
-    if (productData && productData._id) {
-      setFormData((prev) => ({
-        ...prev,
-        name: productData.name,
-        description: productData.description,
-        price: productData.price,
-        category: productData.category,
-        brand: productData.brand,
-        quantity: productData.quantity,
-        countInStock: productData.countInStock,
-        weight: productData.weight,
-        purchasePrice: productData.purchasePrice,
-        images: productData.images || [],
-      }));
-    }
-  }, [productData]);
-
-  const submitHandler = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-
-    try {
-      let uploadedImagePaths = [];
-
-      if (newFiles.length > 0) {
-        const uploadFormData = new FormData();
-        newFiles.forEach((file) => uploadFormData.append("images", file));
-
-        const uploadResponse = await uploadProductImage(uploadFormData).unwrap();
-        uploadedImagePaths = uploadResponse.images || [];
-      }
-
-      const updatedImages = [
-        ...formData.images.filter((img) => typeof img === "string" && img.startsWith("/uploads/")),
-        ...uploadedImagePaths,
-      ];
-
-      const productFormData = new FormData();
-      productFormData.append("name", formData.name);
-      productFormData.append("description", formData.description);
-      productFormData.append("price", formData.price);
-      productFormData.append("category", formData.category);
-      productFormData.append("brand", formData.brand);
-      productFormData.append("quantity", formData.quantity);
-      productFormData.append("countInStock", formData.countInStock);
-      productFormData.append("weight", formData.weight);
-      productFormData.append("purchasePrice", formData.purchasePrice);
-
-      updatedImages.forEach((path) => {
-        productFormData.append("images[]", path);
-      });
-
-      const data = await updateProduct({
-        productId: params.id,
-        formData: productFormData,
-      }).unwrap();
-
-      toast.success("Product updated successfully");
-      navigate("/admin/allproductslist");
-    } catch (err) {
-      toast.error(err?.data?.message || "Failed to update product");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleDeleteImage = async (imagePath) => {
-    if (!window.confirm("Are you sure you want to delete this image?")) return;
-
-    try {
-        await deleteImage({
-            productId: params.id,
-            imagePath,
-        }).unwrap();
-
-        setFormData((prev) => ({
-            ...prev,
-            images: prev.images.filter((img) => img !== imagePath),
-        }));
-
-        toast.success("Image deleted successfully");
-    } catch (err) {
-        console.error("Error deleting image:", err);
-        toast.error(err?.data?.message || "Failed to delete image");
-    }
-};
-
   const uploadFileHandler = (e) => {
     const files = Array.from(e.target.files);
-
-    setNewFiles((prev) => [...prev, ...files]);
-
     const previewUrls = files.map((file) => URL.createObjectURL(file));
 
-    setFormData((prev) => ({
-      ...prev,
-      images: [...prev.images, ...previewUrls],
-    }));
-
+    setImages((prev) => [...prev, ...previewUrls]);
+    setImageFiles((prev) => [...prev, ...files]);
     toast.success("Images added successfully");
   };
 
-  const deleteHandler = async () => {
-    if (!window.confirm("Are you sure you want to delete this product?")) return;
+  const removeImage = (index) => {
+    const newImages = images.filter((_, i) => i !== index);
+    const newImageFiles = imageFiles.filter((_, i) => i !== index);
+    setImages(newImages);
+    setImageFiles(newImageFiles);
+  };
+
+  const submitHandler = async (e) => {
+    e.preventDefault();
+
+    if (imageFiles.length === 0) {
+      toast.error("Please upload at least one image");
+      return;
+    }
 
     setLoading(true);
+
     try {
-      await deleteProduct(params.id).unwrap();
-      toast.success("Product deleted successfully");
-      navigate("/admin/allproductslist");
-    } catch (err) {
-      toast.error(err?.data?.message || "Failed to delete product");
+      const formDataToSend = new FormData();
+      formDataToSend.append("name", formData.name);
+      formDataToSend.append("description", formData.description);
+      formDataToSend.append("price", formData.price);
+      formDataToSend.append("category", formData.category);
+      formDataToSend.append("brand", formData.brand);
+      formDataToSend.append("quantity", formData.quantity);
+      formDataToSend.append("countInStock", formData.countInStock);
+      formDataToSend.append("weight", formData.weight);
+      formDataToSend.append("purchasePrice", formData.purchasePrice);
+
+      imageFiles.forEach((file) => {
+        formDataToSend.append("images", file);
+      });
+
+      const data = await createProduct(formDataToSend).unwrap();
+
+      if (data) {
+        toast.success(`${data.product.name} created successfully`);
+        navigate("/admin/allproductslist");
+      } else {
+        toast.error("Failed to create product");
+      }
+    } catch (error) {
+      console.error("Error:", error);
+      toast.error(error?.data?.message || "Product creation failed. Please try again.");
     } finally {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    return () => {
+      images.forEach((url) => URL.revokeObjectURL(url));
+    };
+  }, [images]);
 
   return (
     <div className="container xl:mx-[9rem] sm:mx-[0]">
       <div className="flex flex-col md:flex-row">
         <div className="md:w-3/4 p-3 text-gray-950">
-          <h2 className="h-12">Update Product</h2>
+          <h2 className="h-12">Create Product</h2>
           <form onSubmit={submitHandler}>
             <div className="mb-3">
-              <label className="border border-gray-800 text-black px-4 block w-full text-center rounded-lg cursor-pointer font-bold py-11">
-                {loading ? "Uploading..." : "Upload Images"}
+              <label
+                className={`border border-gray-800 text-black px-4 block w-full text-center rounded-lg cursor-pointer font-bold py-11 ${
+                  loading ? "opacity-50" : ""
+                }`}
+              >
+                {loading ? (
+                  <Loader />
+                ) : images.length > 0 ? (
+                  `${images.length} selected`
+                ) : (
+                  "Upload Images"
+                )}
                 <input
                   type="file"
                   name="images"
@@ -202,23 +153,24 @@ const ProductUpdate = () => {
               </label>
             </div>
 
-            {formData.images.length > 0 && (
+            {images.length > 0 && (
               <div className="flex flex-wrap gap-3 mt-2">
-                {formData.images.map((image, index) => (
+                {images.map((image, index) => (
                   <div key={index} className="relative w-[10rem] h-[10rem]">
                     <img
                       src={image}
-                      alt={`Product ${index + 1}`}
+                      alt={`Preview ${index + 1}`}
                       className="w-full h-full object-cover rounded-lg"
                     />
-                    <button
-                      onClick={() => handleDeleteImage(image)}
-                      className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600 transition-colors"
-                      type="button"
-                      disabled={loading}
-                    >
-                      ×
-                    </button>
+                    {!loading && (
+                      <button
+                        onClick={() => removeImage(index)}
+                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600 transition-colors"
+                        type="button"
+                      >
+                        ×
+                      </button>
+                    )}
                   </div>
                 ))}
               </div>
@@ -295,12 +247,22 @@ const ProductUpdate = () => {
                   required
                 >
                   <option value="">Choose Category</option>
-                  {categories.map((category) => (
-                    <option key={category._id} value={category._id}>
-                      {category.name}
+                  {categories?.map((cat) => (
+                    <option key={cat._id} value={cat._id}>
+                      {cat.name}
                     </option>
                   ))}
                 </select>
+                <p className="text-sm text-gray-500 mt-1">
+                  Don't see your category?{" "}
+                  <button
+                    type="button"
+                    onClick={() => navigate("/admin/category")}
+                    className="text-blue-500 hover:underline"
+                  >
+                    Add a new category
+                  </button>
+                </p>
               </div>
             </div>
 
@@ -351,15 +313,7 @@ const ProductUpdate = () => {
                 className="py-4 px-10 rounded-lg text-lg font-bold bg-green-600 text-white disabled:opacity-50"
                 disabled={loading}
               >
-                {loading ? "Updating..." : "Update"}
-              </button>
-              <button
-                type="button"
-                onClick={deleteHandler}
-                className="py-4 px-10 rounded-lg text-lg font-bold bg-orange-600 text-white disabled:opacity-50"
-                disabled={loading}
-              >
-                {loading ? "Deleting..." : "Delete"}
+                {loading ? "Creating..." : "Create Product"}
               </button>
             </div>
           </form>
@@ -369,4 +323,4 @@ const ProductUpdate = () => {
   );
 };
 
-export default ProductUpdate;
+export default ProductCreate;

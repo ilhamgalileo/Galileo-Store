@@ -12,7 +12,6 @@ import Register from './pages/auth/Register.jsx'
 import AdminRoute from './pages/admin/AdminRoute.jsx'
 import UserList from './pages/admin/UserList.jsx'
 import CategoryList from './pages/admin/CategoryList.jsx'
-import ProductList from './pages/admin/ProductList.jsx'
 import ProductUpdate from './pages/admin/ProductUpdate.jsx'
 import AllProducts from './pages/admin/AllProducts.jsx'
 import Home from './pages/Home.jsx'
@@ -34,6 +33,7 @@ import PlaceOrderStoreTransfer from './pages/orders/PlaceOrderStoreTransfer.jsx'
 import StoreOrder from './pages/orders/storeOrder.jsx'
 import OrderRecord from './pages/admin/orderRecord.jsx'
 import AdminRegister from './pages/admin/AdminRegister.jsx'
+import ProductCreate from './pages/admin/ProductCreate.jsx'
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -62,7 +62,7 @@ const router = createBrowserRouter(
       {/* admin */}
       <Route path='/admin' element={<AdminRoute />}>
         <Route path='category' element={<CategoryList />} />
-        <Route path='productlist' element={<ProductList />} />
+        <Route path='product/create' element={<ProductCreate />} />
         <Route path='orderlist' element={<OrderList />} />
         <Route path='allproductslist' element={<AllProducts />} />
         <Route path='product/update/:id' element={<ProductUpdate />} />
