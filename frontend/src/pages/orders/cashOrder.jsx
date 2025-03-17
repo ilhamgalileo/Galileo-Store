@@ -18,57 +18,48 @@ const CashOrder = () => {
   const [selectedItems, setSelectedItems] = useState([]);
   const [editedQuantities, setEditedQuantities] = useState({});
   const [selectAll, setSelectAll] = useState(false);
-  const [showDownloadButton, setShowDownloadButton] = useState(true);
+  const [hideElements, setHideElements] = useState(false);
 
   useEffect(() => {
     refetch();
   }, [refetch]);
 
-  useEffect(() => {
-    const handleKeyDown = (event) => {
-      if (event.ctrlKey && event.key === 'p') {
-        event.preventDefault();
-        setShowDownloadButton(false);
-        setTimeout(() => {
-          window.print();
-        }, 300);
-      }
-    };
-
-    const handleBeforePrint = () => setShowDownloadButton(false);
-    const handleAfterPrint = () => setShowDownloadButton(true);
-
-    window.addEventListener('keydown', handleKeyDown);
-    window.addEventListener('beforeprint', handleBeforePrint);
-    window.addEventListener('afterprint', handleAfterPrint);
-
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-      window.removeEventListener('beforeprint', handleBeforePrint);
-      window.removeEventListener('afterprint', handleAfterPrint);
-    };
-  }, []);
-
   const handleDownloadPDF = useCallback(async () => {
     if (!invoiceRef.current) return;
 
-    setShowDownloadButton(false);
+    setHideElements(true)
 
-    const canvas = await html2canvas(invoiceRef.current, { scale: 2, useCORS: true });
-    const imgData = canvas.toDataURL("image/png");
-    const pdf = new jsPDF("p", "mm", "a4");
-    const pageWidth = pdf.internal.pageSize.getWidth();
-    const pageHeight = pdf.internal.pageSize.getHeight();
+    setTimeout(async () => {
+      const canvas = await html2canvas(invoiceRef.current, { scale: 2, useCORS: true });
+      const imgData = canvas.toDataURL("image/png");
+      const pdf = new jsPDF("p", "mm", "a4");
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
 
-    pdf.setFillColor(240, 240, 239);
-    pdf.rect(0, 0, pageWidth, pageHeight, "F");
+      pdf.setFillColor(240, 240, 239);
+      pdf.rect(0, 0, pageWidth, pageHeight, "F");
 
-    const imgWidth = 180;
-    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      const imgWidth = 180;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
 
-    pdf.addImage(imgData, "PNG", 20, 25, imgWidth, imgHeight);
-    pdf.save(`invoice-${orderId}.pdf`);
+      pdf.addImage(imgData, "PNG", 20, 25, imgWidth, imgHeight);
+      pdf.save(`invoice-${orderId}.pdf`);
+      setHideElements(false);
+    }, 500);
   }, [orderId]);
+
+  useEffect(() => {
+    const handleBeforePrint = () => setHideElements(true);
+    const handleAfterPrint = () => setHideElements(false);
+
+    window.addEventListener("beforeprint", handleBeforePrint);
+    window.addEventListener("afterprint", handleAfterPrint);
+
+    return () => {
+      window.removeEventListener("beforeprint", handleBeforePrint);
+      window.removeEventListener("afterprint", handleAfterPrint);
+    };
+  }, []);
 
   const toggleSelectAll = () => {
     if (selectAll) {
@@ -129,11 +120,10 @@ const CashOrder = () => {
   ) : (
     <div className="min-h-screen">
       <div className="flex justify-end sticky top-0 z-0">
-        {showDownloadButton && (
-          <button onClick={handleDownloadPDF} className="bg-blue-500 text-sm text-white font-bold px-2 py-2 mr-7 rounded-full">
+          <button onClick={handleDownloadPDF}
+            className={`bg-blue-500 text-sm text-white font-bold px-2 py-2 mr-7 rounded-full ${hideElements ? "hidden" : ""}`}>
             <FaDownload />
           </button>
-        )}
       </div>
       <div ref={invoiceRef} className="container mx-auto max-w-[85%] ml-[9%] mt-[1rem] relative bg-[#f0f0ef]">
         <div className="w-full p-2 relative">
@@ -175,7 +165,7 @@ const CashOrder = () => {
                             type="checkbox"
                             checked={selectAll}
                             onChange={toggleSelectAll}
-                            className="w-6 h-5 mt-2 cursor-pointer"
+                            className={`w-6 h-5 mt-2 cursor-pointer ${hideElements ? "hidden" : ""}`}
                           />
                         </th>
                       )}
@@ -192,7 +182,7 @@ const CashOrder = () => {
                           <td className="p-2">
                             <input
                               type="checkbox"
-                              className="w-6 h-5 mt-3 cursor-pointer"
+                              className={`w-6 h-5 mt-1 cursor-pointer ${hideElements ? "hidden" : ""}`}
                               checked={selectedItems.some((selected) => selected.product === item.product)}
                               onChange={() => toggleItemSelection(item)}
                             />
@@ -312,7 +302,7 @@ const CashOrder = () => {
           <div className="mt-6">
             <button
               type="button"
-              className="bg-red-500 text-white w-full py-2 rounded"
+              className={`bg-red-500 text-white w-full py-2 rounded ${hideElements ? "hidden" : ""}`}
               onClick={returnHandler}
               disabled={loadingReturn}
             >

@@ -20,40 +20,13 @@ const StoreOrder = () => {
     const [selectedItems, setSelectedItems] = useState([]);
     const [editedQuantities, setEditedQuantities] = useState({});
     const [selectAll, setSelectAll] = useState(false);
-    const [showDownloadButton, setShowDownloadButton] = useState(true);
 
     useEffect(() => {
         refetch();
     }, [refetch]);
 
-    useEffect(() => {
-        const handleKeyDown = (event) => {
-            if (event.ctrlKey && event.key === 'p') {
-                event.preventDefault();
-                setShowDownloadButton(false);
-                setTimeout(() => {
-                    window.print();
-                }, 300);
-            }
-        };
-
-        const handleBeforePrint = () => setShowDownloadButton(false);
-        const handleAfterPrint = () => setShowDownloadButton(true);
-
-        window.addEventListener('keydown', handleKeyDown);
-        window.addEventListener('beforeprint', handleBeforePrint);
-        window.addEventListener('afterprint', handleAfterPrint);
-
-        return () => {
-            window.removeEventListener('keydown', handleKeyDown);
-            window.removeEventListener('beforeprint', handleBeforePrint);
-            window.removeEventListener('afterprint', handleAfterPrint);
-        };
-    }, []);
-
     const handleDownloadPDF = useCallback(async () => {
         if (!invoiceRef.current) return;
-        setShowDownloadButton(false);
         const canvas = await html2canvas(invoiceRef.current, { scale: 2, useCORS: true });
         const imgData = canvas.toDataURL("image/png");
         const pdf = new jsPDF("p", "mm", "a4");
@@ -127,11 +100,9 @@ const StoreOrder = () => {
         <div className="min-h-screen">
             <div className="container mx-auto max-w-[85%] ml-[9%] mt-[1rem] relative">
                 <div className="flex justify-end sticky z-0">
-                    {showDownloadButton && (
-                        <button onClick={handleDownloadPDF} className="bg-blue-500 text-sm text-white font-bold px-2 py-2 mr-7 rounded-full">
-                            <FaDownload />
-                        </button>
-                    )}
+                    <button onClick={handleDownloadPDF} className="bg-blue-500 text-sm text-white font-bold px-2 py-2 mr-7 rounded-full">
+                        <FaDownload />
+                    </button>
                 </div>
                 <div ref={invoiceRef} className="w-full p-2 mt-2 relative bg-[#f0f0ef]">
                     <img src={logo} alt="Logo" className="absolute top-0 md:top-0 left-2 w-[6.5rem] md:w-[12rem] h-auto" />

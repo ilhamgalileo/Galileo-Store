@@ -236,12 +236,21 @@ const OrderList = () => {
                           />
                         </td>
                         <td className="whitespace-nowrap px-3 py-4 text-sm">
-                          <Link
-                            to={`/order/${order._id}`}
-                            className="text-white hover:text-gray-400 font-medium"
-                          >
-                            Details
-                          </Link>
+                          {filteredOrders.includes(order) && (
+                            <Link to={`/order/${order._id}`} className="text-gray-100 hover:underline">
+                              View Order
+                            </Link>
+                          )}
+                          {filteredCashOrders.includes(order) && (
+                            <Link to={`/order/${order._id}/cash`} className="text-gray-100 hover:underline">
+                              View Cash Order
+                            </Link>
+                          )}
+                          {filteredStoreOrders.includes(order) && (
+                            <Link to={`/order/${order._id}/store`} className="text-gray-100 hover:underline">
+                              View Store Order
+                            </Link>
+                          )}
                         </td>
                       </tr>
                     ))}
