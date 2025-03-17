@@ -10,10 +10,11 @@ import {
   useGetTotalSalesByWeekQuery,
   useGetTotalSalesByMonthQuery,
   useGetTotalSalesByYearQuery,
+  useGetIncomeQuery
 } from "../../redux/api/orderApiSlice";
 import OrderList from "./OrderList";
 import Loader from "../../components/loader";
-import { FaUser, FaMoneyBill, FaShoppingBag, FaChartLine, FaCalendar, FaCalendarAlt } from "react-icons/fa";
+import { FaUser, FaMoneyBill, FaShoppingBag, FaChartLine, FaCalendar, FaCalendarAlt, FaMoneyBillAlt } from "react-icons/fa";
 
 const StatBox = ({ title, value, icon, loading }) => (
   <div className="rounded-lg bg-neutral-700 shadow-lg p-6 w-full">
@@ -95,6 +96,7 @@ const AdminDashboard = () => {
   const { data: salesDetailWeekly } = useGetTotalSalesByWeekQuery();
   const { data: salesDetailMonthly } = useGetTotalSalesByMonthQuery();
   const { data: salesDetailYearly } = useGetTotalSalesByYearQuery();
+  const { data: income } = useGetIncomeQuery();
 
   const salesDetail =
     timeRange === "daily" ? salesDetailDaily :
@@ -275,12 +277,18 @@ const AdminDashboard = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-6">
           <StatBox
             title="Total Sales"
             value={sales?.totalSales ? `Rp ${new Intl.NumberFormat("id-ID").format(sales.totalSales)}` : "Rp 0"}
             icon={<FaMoneyBill />}
             loading={loadingSales}
+          />
+          <StatBox
+            title="Total Income"
+            value={`Rp ${new Intl.NumberFormat("id-ID").format(income?.totalIncome)}`} 
+            icon={<FaMoneyBillAlt />}
+            loading={loadingOrders}
           />
           <StatBox
             title="Average Sales"
@@ -311,11 +319,8 @@ const AdminDashboard = () => {
           )}
         </div>
 
-        <div className="rounded-lg  p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-bold text-gray-800">All Order</h2>
-          </div>
-          <OrderList/>
+        <div className="rounded-lg p-6 ">
+          <OrderList />
         </div>
       </div>
     </div>

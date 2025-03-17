@@ -303,7 +303,7 @@ const OrderRecord = () => {
                                         </tr>
                                     )}
                                     {filteredStoreOrders.map((order) => (
-                                        <tr key={order._id} className="bg-orange-800">
+                                        <tr key={order._id} className="bg-gray-700">
                                             <td className="whitespace-nowrap px-3 py-4 text-sm text-white">
                                                 {order?.orderItems?.length || 0} Items
                                             </td>

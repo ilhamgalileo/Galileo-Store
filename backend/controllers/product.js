@@ -161,6 +161,7 @@ export const update = asyncHandler(async (req, res) => {
       countInStock,
       images,
       weight,
+      purchasePrice
     } = req.body;
 
     const product = await Product.findById(req.params.id);
@@ -176,6 +177,7 @@ export const update = asyncHandler(async (req, res) => {
     product.description = description;
     product.weight = weight;
     product.price = price;
+    product.purchasePrice = purchasePrice;
 
     let updatedImages = images
       ? Array.isArray(images)

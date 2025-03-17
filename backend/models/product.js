@@ -32,6 +32,7 @@ const productSchema = mongoose.Schema(
     sold: { type: Number, default: 0 },
     images: [{ type: String }],
     weight: { type: Number, default: 0 },
+    purchasePrice: { type: Number, default: 0 },
   },
   {
     timestamps: true,

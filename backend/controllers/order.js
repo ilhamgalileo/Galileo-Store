@@ -199,6 +199,29 @@ export const getMyOrder = asyncHandler(async (req, res) => {
   res.json(myOder);
 });
 
+export const calcTotalIncome = asyncHandler(async (req, res) => {
+  try {
+    const products = await Product.find({ sold: { $gt: 0 } });
+    let totalIncome = 0;
+    products.forEach((product) => {
+      const profitPerProduct =
+        (product.price - product.purchasePrice) * product.sold;
+      totalIncome += profitPerProduct;
+    });
+
+    res.json({
+      success: true,
+      totalIncome: totalIncome,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Error get income.",
+      error: error.message,
+    });
+  }
+});
+
 export const countTotalOrders = asyncHandler(async (req, res) => {
   const [totalTransferOrders, totalCashOrders, totalOrderStore] =
     await Promise.all([

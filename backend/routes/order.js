@@ -10,6 +10,7 @@ import * as order from "../controllers/order.js";
 router.post("/checkout", authenticate, order.createOrder);
 router.get("/", authenticate, authorizeAdmin, order.getAllOrder);
 router.get("/mine", authenticate, order.getMyOrder);
+router.get("/total-income", authenticate, order.calcTotalIncome);
 router.get("/total-orders", authenticate, order.countTotalOrders);
 router.get("/total-sales", authenticate, order.calcTotalSales);
 router.get("/total-sales-by-date", authenticate, order.calcTotalSalesByDate);

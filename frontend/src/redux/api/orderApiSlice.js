@@ -176,6 +176,10 @@ export const orderApiSlice = apiSlice.injectEndpoints({
     getMemberByEmail: builder.query({
       query: (email) => `${CASH_ORDERS_URL}/${email}/membership`,
     }),
+
+    getIncome: builder.query({
+      query: () => `${ORDERS_URL}/total-income`,
+    }),
   }),
 });
 
@@ -206,4 +210,5 @@ export const {
   useGetAllOrdersQuery,
   useGetMemberByEmailQuery,
   useReturnCashOrderMutation,
+  useGetIncomeQuery,
 } = orderApiSlice;
