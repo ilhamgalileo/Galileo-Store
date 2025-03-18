@@ -60,7 +60,7 @@ const userSchema = new mongoose.Schema(
 );
 
 userSchema.methods.updateMembership = function () {
-  if (this.point >= 100000) {
+  if (this.point >= 10000) {
     this.membership = "Platinum";
   } else if (this.point >= 5000) {
     this.membership = "Gold";

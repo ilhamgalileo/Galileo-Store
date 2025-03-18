@@ -9,12 +9,10 @@ function calcPrice(orderItems) {
     0
   );
   const discount = itemsPrice < 5000000 ? 0 : Math.round(itemsPrice * 0.10);
-  const taxPrice = Math.round(itemsPrice * 0.11);
-  const totalPrice = Math.round(itemsPrice + taxPrice - discount);
+  const totalPrice = Math.round(itemsPrice  - discount);
 
   return {
     itemsPrice: Math.round(itemsPrice),
-    taxPrice: Math.round(taxPrice),
     discount: Math.round(discount),
     totalPrice,
   };
@@ -58,7 +56,6 @@ export const createInStoreOrder = asyncHandler(async (req, res) => {
     user: req.user._id,
     paymentMethod,
     itemsPrice,
-    taxPrice,
     discount,
     totalPrice,
   });
@@ -82,12 +79,6 @@ export const createInStoreOrder = asyncHandler(async (req, res) => {
         quantity: item.qty,
         name: item.name,
       })),
-      {
-        id: "TAX",
-        price: taxPrice,
-        quantity: 1,
-        name: "PPN 11%",
-      },
     ],
   };
 

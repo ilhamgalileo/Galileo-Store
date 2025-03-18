@@ -4,6 +4,7 @@ import asyncHandler from "express-async-handler";
 import snap from "../config/midtrans.js";
 import CashOrder from "../models/cashOrder.js";
 import OrderStore from "../models/orderStore.js";
+import User from "../models/user.js";
 
 function calcPrice(orderItems, membership) {
   const itemsPrice = orderItems.reduce(
@@ -33,13 +34,11 @@ function calcPrice(orderItems, membership) {
 
   const discount = Math.round(itemsPrice * discountRate);
   const subtotal = itemsPrice + shippingPrice;
-  const taxPrice = Math.round(subtotal * 0.11);
-  const totalPrice = Math.round(subtotal + taxPrice - discount);
+  const totalPrice = Math.round(subtotal - discount);
 
   return {
     itemsPrice: Math.round(itemsPrice),
     shippingPrice: Math.round(shippingPrice),
-    taxPrice: Math.round(taxPrice),
     discount: Math.round(discount),
     totalPrice,
   };
@@ -75,8 +74,10 @@ export const createOrder = asyncHandler(async (req, res) => {
     };
   });
 
-  const { itemsPrice, taxPrice, shippingPrice, totalPrice, discount } =
-    calcPrice(dbOrderItems, membership);
+  const { itemsPrice, shippingPrice, totalPrice, discount } = calcPrice(
+    dbOrderItems,
+    membership
+  );
 
   const order = new Order({
     orderItems: dbOrderItems,
@@ -84,9 +85,9 @@ export const createOrder = asyncHandler(async (req, res) => {
     shippingAddress,
     paymentMethod,
     itemsPrice,
-    taxPrice,
     discount,
     shippingPrice,
+    membership,
     totalPrice,
   });
 
@@ -119,12 +120,6 @@ export const createOrder = asyncHandler(async (req, res) => {
         quantity: item.qty,
         name: item.name,
       })),
-      {
-        id: "TAX",
-        price: taxPrice,
-        quantity: 1,
-        name: "PPN 11%",
-      },
       ...(discount > 0
         ? [
             {
@@ -559,31 +554,33 @@ export const markOrderIsPay = asyncHandler(async (req, res) => {
   await Promise.all(
     order.orderItems.map(async (item) => {
       const product = await Product.findById(item.product);
-      if (product) {
-        product.countInStock -= item.qty;
-        product.sold += item.qty;
-
-        if (product.countInStock < 0) {
-          res.status(400);
-          throw new Error(`Stock insufficient for product: ${product.name}`);
-        }
-
-        await product.save();
-      } else {
+      if (!product) {
         res.status(404);
         throw new Error(`Product not found: ${item.product}`);
       }
+
+      if (product.countInStock < item.qty) {
+        res.status(400);
+        throw new Error(`Stock insufficient for product: ${product.name}`);
+      }
+
+      product.countInStock -= item.qty;
+      product.sold += item.qty;
+      await product.save();
     })
   );
 
   await order.save();
 
   if (order.user) {
-    order.user.point = Math.round(
-      (order.user.point || 0) + order.totalPrice / 1000
-    );
-    order.user.updateMembership();
-    await order.user.save();
+    const user = await User.findById(order.user._id);
+    if (user) {
+      const pointsEarned = Math.round(order.totalPrice / 1000);
+      user.point = (user.point || 0) + pointsEarned;
+      user.updateMembership();
+  
+      await user.save();
+    }
   }
 
   res.json(order);
@@ -591,10 +588,7 @@ export const markOrderIsPay = asyncHandler(async (req, res) => {
 
 export const markOrderAsReturned = asyncHandler(async (req, res) => {
   const { returnedItems } = req.body;
-  const order = await Order.findById(req.params.id).populate(
-    "user",
-    "point membership"
-  );
+  const order = await Order.findById(req.params.id).populate("user", "point membership");
 
   if (!order) {
     res.status(404);
@@ -608,6 +602,15 @@ export const markOrderAsReturned = asyncHandler(async (req, res) => {
 
   let totalRefund = 0;
   let weightRefund = 0;
+
+  let discountRate = 0;
+  if (order.user.membership === "Platinum") {
+    discountRate = 0.07;
+  } else if (order.user.membership === "Gold") {
+    discountRate = 0.05;
+  } else if (order.user.membership === "Silver") {
+    discountRate = 0.03;
+  }
 
   for (const returnedItem of returnedItems) {
     const { product, qty } = returnedItem;
@@ -639,7 +642,7 @@ export const markOrderAsReturned = asyncHandler(async (req, res) => {
     productData.sold = Math.max(productData.sold - qty, 0);
     await productData.save();
 
-    const refundAmount = item.price * qty;
+    const refundAmount = item.price * qty * (1 - discountRate);
     totalRefund += refundAmount;
     weightRefund += (item.weight || 0) * qty;
 
@@ -656,9 +659,6 @@ export const markOrderAsReturned = asyncHandler(async (req, res) => {
       order.orderItems.splice(itemIndex, 1);
     }
   }
-
-  const taxRefund = Math.round(totalRefund * 0.11);
-  totalRefund += taxRefund;
 
   if (order.shippingPrice > 0) {
     const totalWeight = order.orderItems.reduce(
@@ -681,7 +681,6 @@ export const markOrderAsReturned = asyncHandler(async (req, res) => {
     order.isReturned = true;
     order.isPaid = false;
     order.totalPrice = 0;
-    order.taxPrice = 0;
     order.itemsPrice = 0;
     order.shippingPrice = 0;
   }
@@ -698,7 +697,7 @@ export const markOrderAsReturned = asyncHandler(async (req, res) => {
   }
 
   res.json(order);
-});
+})
 
 export const markOrderIsDeliver = asyncHandler(async (req, res) => {
   const id = req.params.id;

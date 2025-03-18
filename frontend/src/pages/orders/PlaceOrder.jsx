@@ -29,7 +29,6 @@ const PlaceOrder = () => {
   if (membership !== "Platinum") {
     shippingPrice = totalWeight < 1000 ? 0 : Math.ceil(totalWeight / 1000) * 15000;
   }
-  const taxPrice = Math.round((itemsPrice + shippingPrice) * 0.11);
 
   let discountRate = 0;
   let discountColor = "";
@@ -54,7 +53,7 @@ const PlaceOrder = () => {
   }
 
   const discount = Math.round(itemsPrice * discountRate);
-  const totalPrice = Math.round(itemsPrice + shippingPrice + taxPrice - discount);
+  const totalPrice = Math.round(itemsPrice + shippingPrice - discount);
 
   const [createOrder, { isLoading, error }] = useCreateOrderMutation();
   const [payOrder] = usePayOrderMutation();
@@ -77,7 +76,6 @@ const PlaceOrder = () => {
       paymentMethod: cart.paymentMethod,
       itemsPrice: itemsPrice,
       shippingPrice: shippingPrice,
-      taxPrice: taxPrice,
       discount: discount,
       totalPrice: totalPrice,
       membership: membership,
@@ -191,7 +189,6 @@ const PlaceOrder = () => {
                 {discountText}: -Rp{discount.toLocaleString()}
               </li>
             )}
-            <li>Tax: Rp{taxPrice.toLocaleString()}</li>
             <li className="mt-1 pt-2 border-t border-black w-1/5">Total: Rp{totalPrice.toLocaleString()}</li>
           </ul>
         </div>
