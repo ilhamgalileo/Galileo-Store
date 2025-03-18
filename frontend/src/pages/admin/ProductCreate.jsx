@@ -28,24 +28,36 @@ const ProductCreate = () => {
   const [createProduct] = useCreateProductMutation();
   const { data: categories } = useFetchCateQuery();
 
-  // Fungsi untuk memformat angka ke format Rupiah dengan "Rp"
   const formatToRupiah = (value) => {
     if (!value) return "Rp ";
     return `Rp ${value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")}`;
   };
 
-  // Fungsi untuk menghapus format Rupiah dan mengembalikan angka
   const removeRupiahFormat = (value) => {
     if (!value) return "";
     return value.replace(/[^0-9]/g, "");
   };
 
-  // Handle perubahan input
+  const calculatePrice = (purchasePrice) => {
+    const profit = purchasePrice * 0.08;
+    const price = Number(purchasePrice) + profit;
+    return price;
+  };
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
 
-    if (name === "price" || name === "purchasePrice") {
-      const numericValue = removeRupiahFormat(value); // Hapus format Rupiah
+    if (name === "purchasePrice") {
+      const numericValue = removeRupiahFormat(value);
+      const price = calculatePrice(numericValue);
+
+      setFormData((prev) => ({
+        ...prev,
+        [name]: numericValue,
+        price: price.toString(),
+      }));
+    } else if (name === "price") {
+      const numericValue = removeRupiahFormat(value);
       setFormData((prev) => ({
         ...prev,
         [name]: numericValue,
@@ -130,9 +142,8 @@ const ProductCreate = () => {
           <form onSubmit={submitHandler}>
             <div className="mb-3">
               <label
-                className={`border border-gray-800 text-black px-4 block w-full text-center rounded-lg cursor-pointer font-bold py-11 ${
-                  loading ? "opacity-50" : ""
-                }`}
+                className={`border border-gray-800 text-black px-4 block w-full text-center rounded-lg cursor-pointer font-bold py-11 ${loading ? "opacity-50" : ""
+                  }`}
               >
                 {loading ? (
                   <Loader />
@@ -190,11 +201,11 @@ const ProductCreate = () => {
               </div>
 
               <div>
-                <label htmlFor="price">Price</label>
+                <label htmlFor="purchasePrice">Purchase Price</label>
                 <input
                   type="text"
-                  name="price"
-                  value={formatToRupiah(formData.price)}
+                  name="purchasePrice"
+                  value={formatToRupiah(formData.purchasePrice)}
                   onChange={handleInputChange}
                   className="p-4 w-full border rounded-lg bg-[#101011] text-white"
                   required
@@ -281,13 +292,12 @@ const ProductCreate = () => {
                   <span className="ml-2 text-gray-950">gr</span>
                 </div>
               </div>
-
               <div>
-                <label htmlFor="purchasePrice">Purchase Price</label>
+                <label htmlFor="price">Price</label>
                 <input
                   type="text"
-                  name="purchasePrice"
-                  value={formatToRupiah(formData.purchasePrice)}
+                  name="price"
+                  value={formatToRupiah(formData.price)}
                   onChange={handleInputChange}
                   className="p-4 w-full border rounded-lg bg-[#101011] text-white"
                   required

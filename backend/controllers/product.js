@@ -116,9 +116,8 @@ export const createProduct = asyncHandler(async (req, res) => {
     quantity,
     category,
     description,
-    price,
-    countInStock,
     purchasePrice,
+    countInStock,
     weight,
   } = req.body;
 
@@ -130,6 +129,8 @@ export const createProduct = asyncHandler(async (req, res) => {
     `/uploads/${file.filename}`.replace(/\\/g, "/")
   );
 
+  const price = purchasePrice * 1.08; // Menghitung price secara otomatis
+
   const product = new Product({
     name,
     brand,
@@ -137,9 +138,9 @@ export const createProduct = asyncHandler(async (req, res) => {
     category,
     description,
     countInStock,
-    price,
-    weight,
     purchasePrice,
+    price, // Harga dihitung otomatis
+    weight,
     images: imagePaths,
   });
 
@@ -149,6 +150,64 @@ export const createProduct = asyncHandler(async (req, res) => {
     message: "Product created successfully",
     product,
   });
+});
+
+export const updateProduct = asyncHandler(async (req, res) => {
+  try {
+    const {
+      name,
+      brand,
+      quantity,
+      category,
+      description,
+      purchasePrice,
+      countInStock,
+      images,
+      weight,
+    } = req.body;
+
+    const product = await Product.findById(req.params.id);
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    const profit = purchasePrice * 0.08
+
+    product.name = name;
+    product.brand = brand;
+    product.quantity = quantity;
+    product.category = category;
+    product.description = description;
+    product.countInStock = countInStock;
+    product.weight = weight;
+    product.purchasePrice = purchasePrice;
+    product.price = purchasePrice + profit;
+
+    let updatedImages = images
+      ? Array.isArray(images)
+        ? images
+        : [images]
+      : product.images;
+
+    if (req.files && req.files.length > 0) {
+      const imagePaths = req.files.map((file) =>
+        `/uploads/${file.filename}`.replace(/\\/g, "/")
+      );
+      updatedImages = [...updatedImages, ...imagePaths];
+    }
+
+    product.images = updatedImages;
+
+    await product.save();
+
+    res.json({
+      message: "Product updated successfully!",
+      product,
+    });
+  } catch (error) {
+    console.error("Update Error:", error);
+    res.status(500).json({ message: "Failed to update product" });
+  }
 });
 
 export const update = asyncHandler(async (req, res) => {
@@ -163,7 +222,7 @@ export const update = asyncHandler(async (req, res) => {
       countInStock,
       images,
       weight,
-      purchasePrice
+      purchasePrice,
     } = req.body;
 
     const product = await Product.findById(req.params.id);
