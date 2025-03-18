@@ -76,7 +76,6 @@ export const addProductReview = asyncHandler(async (req, res) => {
       return res.status(404).json({ message: "Product not found" });
     }
 
-    // Cek apakah user sudah pernah mereview produk ini
     const alreadyReviewed = product.reviews.find(
       (r) => r.user.toString() === userId.toString()
     );
@@ -85,7 +84,6 @@ export const addProductReview = asyncHandler(async (req, res) => {
       return res.status(400).json({ message: "Product already reviewed" });
     }
 
-    // Tambahkan review baru
     const review = {
       user: userId,
       name: req.user.username,
@@ -129,7 +127,7 @@ export const createProduct = asyncHandler(async (req, res) => {
     `/uploads/${file.filename}`.replace(/\\/g, "/")
   );
 
-  const price = purchasePrice * 1.08; // Menghitung price secara otomatis
+  const profit = 0.08;
 
   const product = new Product({
     name,
@@ -139,7 +137,7 @@ export const createProduct = asyncHandler(async (req, res) => {
     description,
     countInStock,
     purchasePrice,
-    price, // Harga dihitung otomatis
+    price: parseFloat(purchasePrice) * (1 + profit),
     weight,
     images: imagePaths,
   });
@@ -152,64 +150,6 @@ export const createProduct = asyncHandler(async (req, res) => {
   });
 });
 
-export const updateProduct = asyncHandler(async (req, res) => {
-  try {
-    const {
-      name,
-      brand,
-      quantity,
-      category,
-      description,
-      purchasePrice,
-      countInStock,
-      images,
-      weight,
-    } = req.body;
-
-    const product = await Product.findById(req.params.id);
-    if (!product) {
-      return res.status(404).json({ message: "Product not found" });
-    }
-
-    const profit = purchasePrice * 0.08
-
-    product.name = name;
-    product.brand = brand;
-    product.quantity = quantity;
-    product.category = category;
-    product.description = description;
-    product.countInStock = countInStock;
-    product.weight = weight;
-    product.purchasePrice = purchasePrice;
-    product.price = purchasePrice + profit;
-
-    let updatedImages = images
-      ? Array.isArray(images)
-        ? images
-        : [images]
-      : product.images;
-
-    if (req.files && req.files.length > 0) {
-      const imagePaths = req.files.map((file) =>
-        `/uploads/${file.filename}`.replace(/\\/g, "/")
-      );
-      updatedImages = [...updatedImages, ...imagePaths];
-    }
-
-    product.images = updatedImages;
-
-    await product.save();
-
-    res.json({
-      message: "Product updated successfully!",
-      product,
-    });
-  } catch (error) {
-    console.error("Update Error:", error);
-    res.status(500).json({ message: "Failed to update product" });
-  }
-});
-
 export const update = asyncHandler(async (req, res) => {
   try {
     const {
@@ -218,7 +158,6 @@ export const update = asyncHandler(async (req, res) => {
       quantity,
       category,
       description,
-      price,
       countInStock,
       images,
       weight,
@@ -237,8 +176,12 @@ export const update = asyncHandler(async (req, res) => {
     product.countInStock = countInStock;
     product.description = description;
     product.weight = weight;
-    product.price = price;
     product.purchasePrice = purchasePrice;
+
+    if (purchasePrice) {
+      const profitPercentage = 0.08; 
+      product.price = parseFloat(purchasePrice) * (1 + profitPercentage);
+    }
 
     let updatedImages = images
       ? Array.isArray(images)

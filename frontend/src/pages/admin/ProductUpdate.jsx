@@ -46,11 +46,26 @@ const ProductUpdate = () => {
     return value.replace(/[^0-9]/g, "");
   };
 
+  const calculatePrice = (purchasePrice) => {
+    const profit = purchasePrice * 0.08;
+    const price = Number(purchasePrice) + profit;
+    return price;
+  };
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
 
-    if (name === "price" || name === "purchasePrice") {
-      const numericValue = removeRupiahFormat(value); 
+    if (name === "purchasePrice") {
+      const numericValue = removeRupiahFormat(value);
+      const price = calculatePrice(numericValue);
+
+      setFormData((prev) => ({
+        ...prev,
+        [name]: numericValue,
+        price: price.toString(),
+      }));
+    } else if (name === "price") {
+      const numericValue = removeRupiahFormat(value);
       setFormData((prev) => ({
         ...prev,
         [name]: numericValue,
@@ -134,22 +149,22 @@ const ProductUpdate = () => {
     if (!window.confirm("Are you sure you want to delete this image?")) return;
 
     try {
-        await deleteImage({
-            productId: params.id,
-            imagePath,
-        }).unwrap();
+      await deleteImage({
+        productId: params.id,
+        imagePath,
+      }).unwrap();
 
-        setFormData((prev) => ({
-            ...prev,
-            images: prev.images.filter((img) => img !== imagePath),
-        }));
+      setFormData((prev) => ({
+        ...prev,
+        images: prev.images.filter((img) => img !== imagePath),
+      }));
 
-        toast.success("Image deleted successfully");
+      toast.success("Image deleted successfully");
     } catch (err) {
-        console.error("Error deleting image:", err);
-        toast.error(err?.data?.message || "Failed to delete image");
+      console.error("Error deleting image:", err);
+      toast.error(err?.data?.message || "Failed to delete image");
     }
-};
+  };
 
   const uploadFileHandler = (e) => {
     const files = Array.from(e.target.files);
@@ -238,11 +253,11 @@ const ProductUpdate = () => {
               </div>
 
               <div>
-                <label htmlFor="price">Price</label>
+                <label htmlFor="purchasePrice">Purchase Price</label>
                 <input
                   type="text"
-                  name="price"
-                  value={formatToRupiah(formData.price)}
+                  name="purchasePrice"
+                  value={formatToRupiah(formData.purchasePrice)}
                   onChange={handleInputChange}
                   className="p-4 w-full border rounded-lg bg-[#101011] text-white"
                   required
@@ -321,11 +336,11 @@ const ProductUpdate = () => {
               </div>
 
               <div>
-                <label htmlFor="purchasePrice">Purchase Price</label>
+                <label htmlFor="price">Price</label>
                 <input
                   type="text"
-                  name="purchasePrice"
-                  value={formatToRupiah(formData.purchasePrice)}
+                  name="price"
+                  value={formatToRupiah(formData.price)}
                   onChange={handleInputChange}
                   className="p-4 w-full border rounded-lg bg-[#101011] text-white"
                   required
