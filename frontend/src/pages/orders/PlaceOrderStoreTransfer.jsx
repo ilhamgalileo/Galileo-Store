@@ -11,10 +11,7 @@ import { usePayOrderStoreMutation, useCreateStoreTransferOrderMutation } from ".
 const PlaceOrderStoreTransfer = () => {
     const navigate = useNavigate()
     const cart = useSelector(state => state.cart)
-    const itemsPrice = cart.cartItems.reduce((acc, item) => acc + item.qty * item.price, 0) || 0
-    const discount = itemsPrice < 5000000 ? 0 : Math.round(itemsPrice * 0.10);
-    const taxPrice = Math.round(itemsPrice * 0.11)
-    const totalPrice = Math.round(itemsPrice + taxPrice - discount)
+    const totalPrice = cart.cartItems.reduce((acc, item) => acc + item.qty * item.price, 0) || 0
     const [createOrder, { isLoading, error }] = useCreateStoreTransferOrderMutation()
     const [payOrder] = usePayOrderStoreMutation()
 
@@ -42,9 +39,6 @@ const PlaceOrderStoreTransfer = () => {
         const res = await createOrder({
             orderItems: cart.cartItems,
             paymentMethod: cart.paymentMethod,
-            itemsPrice: cart.itemsPrice,
-            taxPrice: cart.taxPrice,
-            discount: discount,
             totalPrice: cart.totalPrice,
         }).unwrap()
 
@@ -105,7 +99,7 @@ const PlaceOrderStoreTransfer = () => {
                                 {cart.cartItems.map((item) => (
                                     <tr key={item.product}>
                                         <td><img src={item?.images[0]} alt={item.name} className="w-16 h-16 object-cover" /></td>
-                                        <td><Link to={`/product/${item.product}`}>{item.name}</Link></td>
+                                        <td><Link to={`/products/${item.product}`}>{item.name}</Link></td>
                                         <td>{item.qty}</td>
                                         <td>Rp{item.price.toLocaleString()}</td>
                                         <td>Rp{(item.qty * item.price).toLocaleString()}</td>
@@ -119,12 +113,8 @@ const PlaceOrderStoreTransfer = () => {
                 <div className="mt-8 ml-[7rem] text-gray-950">
                     <h2 className="text-xl font-semibold">Order Summary</h2>
                     <ul>
-                        <li>Items: Rp{itemsPrice.toLocaleString()}</li>
-                        <li>Tax: Rp{taxPrice.toLocaleString()}</li>
-                        {discount > 0 && (
-                            <li>Discount: Rp{discount.toLocaleString()}</li>
-                        )}
-                        <li className="mt-1 pt-2 border-t border-black w-1/5">Total: Rp{totalPrice.toLocaleString()}</li>
+                        <li>Items: </li>
+                        <li>Total: Rp{totalPrice.toLocaleString()}</li>
                     </ul>
                 </div>
                 <button

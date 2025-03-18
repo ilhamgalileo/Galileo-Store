@@ -52,8 +52,6 @@ const orderStoreSchema = mongoose.Schema(
     ],
 
     itemsPrice: { type: Number, required: true },
-    discount: { type: Number },
-    discount: { type: Number },
     totalPrice: { type: Number, required: true, default: 0.0 },
     isPaid: { type: Boolean, required: true, default: false },
     paidAt: { type: Date },

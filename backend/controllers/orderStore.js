@@ -4,17 +4,12 @@ import snap from "../config/midtrans.js";
 import OrderStore from "../models/orderStore.js";
 
 function calcPrice(orderItems) {
-  const itemsPrice = orderItems.reduce(
+  const totalPrice = orderItems.reduce(
     (acc, item) => acc + item.price * item.qty,
     0
   );
-  const discount = itemsPrice < 5000000 ? 0 : Math.round(itemsPrice * 0.10);
-  const totalPrice = Math.round(itemsPrice  - discount);
-
   return {
-    itemsPrice: Math.round(itemsPrice),
-    discount: Math.round(discount),
-    totalPrice,
+    totalPrice: Math.round(totalPrice),
   };
 }
 
@@ -49,14 +44,12 @@ export const createInStoreOrder = asyncHandler(async (req, res) => {
     };
   });
 
-  const { itemsPrice, taxPrice, totalPrice, discount } = calcPrice(dbOrderItems);
+  const {  totalPrice } = calcPrice(dbOrderItems);
 
   const order = new OrderStore({
     orderItems: dbOrderItems,
     user: req.user._id,
     paymentMethod,
-    itemsPrice,
-    discount,
     totalPrice,
   });
 
@@ -241,7 +234,6 @@ export const markOrderAsReturned = asyncHandler(async (req, res) => {
   if (order.orderItems.length === 0) {
     order.isReturned = true;
     order.isPaid = false;
-    order.taxPrice = 0;
     order.totalPrice = 0;
   }
 
