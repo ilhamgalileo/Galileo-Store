@@ -75,15 +75,6 @@ export const createInStoreOrder = asyncHandler(async (req, res) => {
     ],
   };
 
-  if (discount > 0) {
-    orderDetails.item_details.push({
-      id: "DISCOUNT",
-      price: -discount,
-      quantity: 1,
-      name: "discount",
-    });
-  }
-
   try {
     const response = await snap.createTransaction(orderDetails);
 
@@ -108,7 +99,7 @@ export const createInStoreOrder = asyncHandler(async (req, res) => {
 });
 
 export const markOrderIsPay = asyncHandler(async (req, res) => {
-  const order = await OrderStore.findById(req.params.id);
+  const order = await OrderStore.findById.populate("user", "username");
 
   if (order) {
     const { status, updatedAt, id, payment_type } = req.body;

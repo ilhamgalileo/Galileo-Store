@@ -50,8 +50,6 @@ const orderStoreSchema = mongoose.Schema(
         returnedAt: { type: Date, default: Date.now },
       },
     ],
-
-    itemsPrice: { type: Number, required: true },
     totalPrice: { type: Number, required: true, default: 0.0 },
     isPaid: { type: Boolean, required: true, default: false },
     paidAt: { type: Date },
