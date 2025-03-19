@@ -4,6 +4,7 @@ import { authorizeAdmin, authenticate, superAdminAuth } from '../middlewares/mid
 import * as cashOrder from '../controllers/cashOrder.js'
 
 router.post('/', authenticate, authorizeAdmin, cashOrder.createCashOrder)
+router.get('/total-income-cash', authenticate, authorizeAdmin, cashOrder.calcTotalIncomeCash)
 router.get('/all', authenticate, authorizeAdmin, cashOrder.getAllOrderCash)
 router.get('/:id', authenticate, authorizeAdmin, cashOrder.getCashOrderById)
 router.put('/:id/return', authenticate, authorizeAdmin, cashOrder.markOrderAsReturned)

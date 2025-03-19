@@ -62,7 +62,7 @@ export const createCashOrder = async (req, res) => {
         discount = 0;
     }
 
-    const totalAmount = calculatedTotal - discount;
+    const totalAmount = Math.round(calculatedTotal - discount);
 
     if (receivedAmount < totalAmount) {
       return res.status(400).json({
@@ -140,6 +140,53 @@ export const getCashOrderById = asyncHandler(async (req, res) => {
     res.send(data);
   } else {
     res.status(500).send({ message: "Order not found with id " + id });
+  }
+});
+
+export const calcTotalIncomeCash = asyncHandler(async (req, res) => {
+  try {
+    const orders = await CashOrder.find({ isPaid: true }).populate("items.product");
+
+    let totalIncome = 0;
+
+    orders.forEach((order) => {
+      const totalPurchasePrice = order.items.reduce((acc, item) => {
+        const purchasePrice = item.product.purchasePrice || 0;
+        return acc + purchasePrice * item.quantity;
+      }, 0);
+
+      const itemsPrice = order.items.reduce((acc, item) => {
+        return acc + item.price * item.quantity;
+      }, 0);
+
+      let discountRate = 0;
+      if (order.membership === "Platinum") {
+        discountRate = 0.07;
+      } else if (order.membership === "Gold") {
+        discountRate = 0.05;
+      } else if (order.membership === "Silver") {
+        discountRate = 0.03;
+      }
+
+      const discount = itemsPrice * discountRate;
+
+      const totalPrice = itemsPrice - discount;
+
+      const profit = Math.round(totalPrice - totalPurchasePrice);
+
+      Math.round(totalIncome += profit);
+    });
+
+    res.json({
+      success: true,
+      totalIncomeCash: totalIncome,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Error calculating income.",
+      error: error.message,
+    });
   }
 });
 

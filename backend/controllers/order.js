@@ -241,7 +241,6 @@ export const calcTotalIncome = asyncHandler(async (req, res) => {
   }
 });
 
-
 export const countTotalOrders = asyncHandler(async (req, res) => {
   const [totalTransferOrders, totalCashOrders, totalOrderStore] =
     await Promise.all([
