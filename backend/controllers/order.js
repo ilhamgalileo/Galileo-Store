@@ -196,12 +196,36 @@ export const getMyOrder = asyncHandler(async (req, res) => {
 
 export const calcTotalIncome = asyncHandler(async (req, res) => {
   try {
-    const products = await Product.find({ sold: { $gt: 0 } });
+    const orders = await Order.find({ isPaid: true }).populate("orderItems.product");
+
     let totalIncome = 0;
-    products.forEach((product) => {
-      const profitPerProduct =
-        (product.price - product.purchasePrice) * product.sold;
-      totalIncome += profitPerProduct;
+
+    orders.forEach((order) => {
+      const totalPurchasePrice = order.orderItems.reduce((acc, item) => {
+        const purchasePrice = item.product.purchasePrice || 0;
+        return acc + purchasePrice * item.qty;
+      }, 0);
+
+      const itemsPrice = order.orderItems.reduce((acc, item) => {
+        return acc + item.price * item.qty;
+      }, 0);
+
+      let discountRate = 0;
+      if (order.membership === "Platinum") {
+        discountRate = 0.07;
+      } else if (order.membership === "Gold") {
+        discountRate = 0.05;
+      } else if (order.membership === "Silver") {
+        discountRate = 0.03;
+      }
+
+      const discount = itemsPrice * discountRate;
+
+      const totalPrice = itemsPrice - discount;
+
+      const profit = totalPrice - totalPurchasePrice;
+
+      Math.round(totalIncome += profit);
     });
 
     res.json({
@@ -211,11 +235,12 @@ export const calcTotalIncome = asyncHandler(async (req, res) => {
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: "Error get income.",
+      message: "Error calculating income.",
       error: error.message,
     });
   }
 });
+
 
 export const countTotalOrders = asyncHandler(async (req, res) => {
   const [totalTransferOrders, totalCashOrders, totalOrderStore] =
@@ -675,7 +700,7 @@ export const markOrderAsReturned = asyncHandler(async (req, res) => {
   }
 
   order.totalPrice = Math.max(order.totalPrice - totalRefund, 0);
-  order.returnAmount = (order.returnAmount || 0) + totalRefund;
+  order.returnAmount = Math.round((order.returnAmount || 0) + totalRefund);
 
   if (order.orderItems.length === 0) {
     order.isReturned = true;
