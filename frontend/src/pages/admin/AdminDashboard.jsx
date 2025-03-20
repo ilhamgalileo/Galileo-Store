@@ -1,3 +1,4 @@
+// AdminDashboard.jsx
 import { useState, useEffect } from "react";
 import Chart from "react-apexcharts";
 import {
@@ -17,6 +18,7 @@ import Loader from "../../components/loader";
 import { toast } from 'react-toastify'
 import { useBackupDatabaseMutation } from "../../redux/api/backupApiSlice";
 import { FaUser, FaMoneyBill, FaShoppingBag, FaChartLine, FaCalendar, FaCalendarAlt, FaMoneyBillAlt } from "react-icons/fa";
+import IncomePieChart from "../../components/IncomePieChart";
 
 const StatBox = ({ title, value, icon, loading }) => (
   <div className="rounded-lg bg-neutral-700 shadow-lg p-6 w-full">
@@ -314,7 +316,7 @@ const AdminDashboard = () => {
           />
           <StatBox
             title="Total Income"
-            value={`Rp ${new Intl.NumberFormat("id-ID").format(income?.totalIncome)}`}
+            value={`Rp ${new Intl.NumberFormat("id-ID").format(income?.totalProfit)}`}
             icon={<FaMoneyBillAlt />}
             loading={loadingOrders}
           />
@@ -337,14 +339,18 @@ const AdminDashboard = () => {
             loading={loadingOrders}
           />
         </div>
-
-        <div className="bg-neutral-800 rounded-lg shadow-lg p-6 mb-6">
-          <h2 className="text-lg font-bold text-white">Sales Trend ({timeRange})</h2>
-          {chartConfig.series[0].data.length > 0 ? (
-            <Chart options={chartConfig.options} series={chartConfig.series} type="area" height={350} />
-          ) : (
-            <div className="flex items-center justify-center h-[350px] text-gray-800">No sales data available</div>
-          )}
+        <div className="grid grid-cols-1 md:grid-cols-2  gap-6 mb-6">
+          <div className="bg-neutral-800 rounded-lg shadow-lg p-6">
+            <h2 className="text-lg font-bold text-white">Sales Trend ({timeRange})</h2>
+            {chartConfig.series[0].data.length > 0 ? (
+              <Chart options={chartConfig.options} series={chartConfig.series} type="area" height={350} />
+            ) : (
+              <div className="flex items-center justify-center h-[350px] text-gray-800">No sales data available</div>
+            )}
+          </div>
+          <div className="bg-neutral-800 rounded-lg shadow-lg p-6">
+            <IncomePieChart />
+          </div>
         </div>
 
         <div className="rounded-lg p-6 ">
@@ -355,4 +361,4 @@ const AdminDashboard = () => {
   );
 };
 
-export default AdminDashboard
+export default AdminDashboard;

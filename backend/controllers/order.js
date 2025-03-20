@@ -223,14 +223,14 @@ export const calcTotalIncome = asyncHandler(async (req, res) => {
 
       const totalPrice = itemsPrice - discount;
 
-      const profit = totalPrice - totalPurchasePrice;
+      const profit = Math.round(totalPrice - totalPurchasePrice);
 
-      Math.round(totalIncome += profit);
+      totalIncome += profit;
     });
 
     res.json({
       success: true,
-      totalIncome: totalIncome,
+      totalProfit: totalIncome,
     });
   } catch (error) {
     res.status(500).json({
@@ -253,6 +253,327 @@ export const countTotalOrders = asyncHandler(async (req, res) => {
     totalTransferOrders + totalCashOrders + totalOrderStore;
 
   res.json({ totalOrders: totalCombinedOrders });
+});
+
+export const calcTotalProfitByDate = asyncHandler(async (req, res) => {
+  try {
+    const profitByDateOrder = await Order.aggregate([
+      {
+        $match: { isPaid: true }, 
+      },
+      {
+        $unwind: "$orderItems", 
+      },
+      {
+        $lookup: {
+          from: "products",
+          localField: "orderItems.product",
+          foreignField: "_id",
+          as: "productDetails",
+        },
+      },
+      {
+        $unwind: "$productDetails",
+      },
+      {
+        $group: {
+          _id: {
+            $dateToString: { format: "%Y-%m-%d", date: "$paidAt" }, 
+          },
+          totalItemsPrice: {
+            $sum: { $multiply: ["$orderItems.price", "$orderItems.qty"] }, 
+          },
+          totalPurchasePrice: {
+            $sum: { $multiply: ["$productDetails.purchasePrice", "$orderItems.qty"] },
+          },
+          totalDiscount: {
+            $sum: {
+              $multiply: [
+                { $multiply: ["$orderItems.price", "$orderItems.qty"] },
+                {
+                  $cond: [
+                    { $eq: ["$membership", "Platinum"] },
+                    0.07,
+                    {
+                      $cond: [
+                        { $eq: ["$membership", "Gold"] },
+                        0.05,
+                        { $cond: [{ $eq: ["$membership", "Silver"] }, 0.03, 0] },
+                      ],
+                    },
+                  ],
+                },
+              ],
+            },
+          },
+        },
+      },
+      {
+        $project: {
+          totalProfit: {
+            $round: [
+              {
+                $subtract: [
+                  { $subtract: ["$totalItemsPrice", "$totalDiscount"] },
+                  "$totalPurchasePrice",
+                ],
+              },
+              0,
+            ],
+          },
+        },
+      },
+    ]);
+
+    res.json(profitByDateOrder);
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Error calculating profit by date.",
+      error: error.message,
+    });
+  }
+});
+
+export const calcTotalProfitByYear = asyncHandler(async (req, res) => {
+  try {
+    const profitByYearOrder = await Order.aggregate([
+      {
+        $match: { isPaid: true }, 
+      },
+      {
+        $unwind: "$orderItems", 
+      },
+      {
+        $lookup: {
+          from: "products",
+          localField: "orderItems.product",
+          foreignField: "_id",
+          as: "productDetails",
+        },
+      },
+      {
+        $unwind: "$productDetails",
+      },
+      {
+        $group: {
+          _id: {
+            $dateToString: { format: "%Y", date: "$paidAt" }, 
+          },
+          totalItemsPrice: {
+            $sum: { $multiply: ["$orderItems.price", "$orderItems.qty"] }, 
+          },
+          totalPurchasePrice: {
+            $sum: { $multiply: ["$productDetails.purchasePrice", "$orderItems.qty"] },
+          },
+          totalDiscount: {
+            $sum: {
+              $multiply: [
+                { $multiply: ["$orderItems.price", "$orderItems.qty"] },
+                {
+                  $cond: [
+                    { $eq: ["$membership", "Platinum"] },
+                    0.07,
+                    {
+                      $cond: [
+                        { $eq: ["$membership", "Gold"] },
+                        0.05,
+                        { $cond: [{ $eq: ["$membership", "Silver"] }, 0.03, 0] },
+                      ],
+                    },
+                  ],
+                },
+              ],
+            },
+          },
+        },
+      },
+      {
+        $project: {
+          totalProfit: {
+            $round: [
+              {
+                $subtract: [
+                  { $subtract: ["$totalItemsPrice", "$totalDiscount"] },
+                  "$totalPurchasePrice",
+                ],
+              },
+              0,
+            ],
+          },
+        },
+      },
+    ]);
+
+    res.json(profitByYearOrder);
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Error calculating profit by date.",
+      error: error.message,
+    });
+  }
+});
+
+export const calcTotalProfitByMonth = asyncHandler(async (req, res) => {
+  try {
+    const profitByMonthOrder = await Order.aggregate([
+      {
+        $match: { isPaid: true }, 
+      },
+      {
+        $unwind: "$orderItems", 
+      },
+      {
+        $lookup: {
+          from: "products",
+          localField: "orderItems.product",
+          foreignField: "_id",
+          as: "productDetails",
+        },
+      },
+      {
+        $unwind: "$productDetails",
+      },
+      {
+        $group: {
+          _id: {
+            $dateToString: { format: "%Y-%m", date: "$paidAt" }, 
+          },
+          totalItemsPrice: {
+            $sum: { $multiply: ["$orderItems.price", "$orderItems.qty"] }, 
+          },
+          totalPurchasePrice: {
+            $sum: { $multiply: ["$productDetails.purchasePrice", "$orderItems.qty"] },
+          },
+          totalDiscount: {
+            $sum: {
+              $multiply: [
+                { $multiply: ["$orderItems.price", "$orderItems.qty"] },
+                {
+                  $cond: [
+                    { $eq: ["$membership", "Platinum"] },
+                    0.07,
+                    {
+                      $cond: [
+                        { $eq: ["$membership", "Gold"] },
+                        0.05,
+                        { $cond: [{ $eq: ["$membership", "Silver"] }, 0.03, 0] },
+                      ],
+                    },
+                  ],
+                },
+              ],
+            },
+          },
+        },
+      },
+      {
+        $project: {
+          totalProfit: {
+            $round: [
+              {
+                $subtract: [
+                  { $subtract: ["$totalItemsPrice", "$totalDiscount"] },
+                  "$totalPurchasePrice",
+                ],
+              },
+              0,
+            ],
+          },
+        },
+      },
+    ]);
+
+    res.json(profitByMonthOrder);
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Error calculating profit by date.",
+      error: error.message,
+    });
+  }
+});
+
+export const calcTotalProfitByWeek = asyncHandler(async (req, res) => {
+  try {
+    const profitByWeekOrder = await Order.aggregate([
+      {
+        $match: { isPaid: true }, 
+      },
+      {
+        $unwind: "$orderItems", 
+      },
+      {
+        $lookup: {
+          from: "products",
+          localField: "orderItems.product",
+          foreignField: "_id",
+          as: "productDetails",
+        },
+      },
+      {
+        $unwind: "$productDetails",
+      },
+      {
+        $group: {
+          _id: {
+            month: { $dateToString: { format: "%Y-%m", date: "$paidAt" } },
+            week: { $ceil: { $divide: [{ $dayOfMonth: "$paidAt" }, 7] } },
+          },
+          totalItemsPrice: {
+            $sum: { $multiply: ["$orderItems.price", "$orderItems.qty"] }, 
+          },
+          totalPurchasePrice: {
+            $sum: { $multiply: ["$productDetails.purchasePrice", "$orderItems.qty"] },
+          },
+          totalDiscount: {
+            $sum: {
+              $multiply: [
+                { $multiply: ["$orderItems.price", "$orderItems.qty"] },
+                {
+                  $cond: [
+                    { $eq: ["$membership", "Platinum"] },
+                    0.07,
+                    {
+                      $cond: [
+                        { $eq: ["$membership", "Gold"] },
+                        0.05,
+                        { $cond: [{ $eq: ["$membership", "Silver"] }, 0.03, 0] },
+                      ],
+                    },
+                  ],
+                },
+              ],
+            },
+          },
+        },
+      },
+      {
+        $project: {
+          totalProfit: {
+            $round: [
+              {
+                $subtract: [
+                  { $subtract: ["$totalItemsPrice", "$totalDiscount"] },
+                  "$totalPurchasePrice",
+                ],
+              },
+              0,
+            ],
+          },
+        },
+      },
+    ]);
+
+    res.json(profitByWeekOrder);
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Error calculating profit by date.",
+      error: error.message,
+    });
+  }
 });
 
 export const calcTotalSales = asyncHandler(async (req, res) => {
