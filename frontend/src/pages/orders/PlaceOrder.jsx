@@ -53,7 +53,8 @@ const PlaceOrder = () => {
   }
 
   const discount = Math.round(itemsPrice * discountRate);
-  const totalPrice = Math.round(itemsPrice + shippingPrice - discount);
+  const totalPrice = Math.round(itemsPrice - discount);
+  const bill = Math.round(totalPrice + shippingPrice)
 
   const [createOrder, { isLoading, error }] = useCreateOrderMutation();
   const [payOrder] = usePayOrderMutation();
@@ -79,6 +80,7 @@ const PlaceOrder = () => {
       discount: discount,
       totalPrice: totalPrice,
       membership: membership,
+      bill: bill
     }).unwrap();
 
     const token = res.token;
@@ -189,7 +191,7 @@ const PlaceOrder = () => {
                 {discountText}: -Rp{discount.toLocaleString()}
               </li>
             )}
-            <li className="mt-1 pt-2 border-t border-black w-1/5">Total: Rp{totalPrice.toLocaleString()}</li>
+            <li className="mt-1 pt-2 border-t border-black w-1/5">Total Price: Rp{bill.toLocaleString()}</li>
           </ul>
         </div>
         <button

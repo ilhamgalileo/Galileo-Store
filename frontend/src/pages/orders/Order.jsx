@@ -313,7 +313,7 @@ const Order = () => {
                 )}
                 <div className="flex justify-between mt-2 pt-2 border-t border-black">
                   <p>Total:</p>
-                  <strong>Rp{new Intl.NumberFormat('id-ID').format(order.totalPrice)}</strong>
+                  <strong>Rp{new Intl.NumberFormat('id-ID').format(order.bill)}</strong>
                 </div>
               </div>
             </div>

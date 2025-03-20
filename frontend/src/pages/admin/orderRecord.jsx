@@ -268,7 +268,7 @@ const OrderRecord = () => {
                                                 {order.user ? order.user.username : "N/A"}
                                             </td>
                                             <td className="whitespace-nowrap px-3 py-4 text-sm text-white">
-                                                Rp {new Intl.NumberFormat('id-ID').format(order.totalPrice)}
+                                                Rp {new Intl.NumberFormat('id-ID').format(order.bill || order.totalPrice)}
                                             </td>
                                             <td className="whitespace-nowrap px-3 py-4 text-sm text-white">
                                                 {order.createdAt ? new Date(order.createdAt).toLocaleDateString() : "N/A"}

@@ -24,11 +24,11 @@ const UserOrder = () => {
                 <th className="py-3 px-4 text-left">IMAGE</th>
                 <th className="py-3 px-4 text-left">ID</th>
                 <th className="py-3 px-4 text-left">DATE</th>
-                <th className="py-3 px-4 text-center">Items Purchased</th>
+                <th className="py-3 px-4 text-center">Item Purchased</th>
                 <th className="py-3 px-4 text-left">TOTAL</th>
                 <th className="py-3 px-4 text-left">PAID</th>
                 <th className="py-3 px-4 text-left">DELIVERED</th>
-                <th className="py-3 px-4 text-left">ACTIONS</th>
+                <th className="py-3 px-4 text-left">ACTION</th>
               </tr>
             </thead>
             <tbody className="text-gray-100 bg-gray-700">
@@ -49,7 +49,7 @@ const UserOrder = () => {
                     {order.orderItems?.length}
                   </td>
                   <td className="py-4 px-4 border-b">
-                    RP. {new Intl.NumberFormat("id-ID").format(order.totalPrice)}
+                    RP{new Intl.NumberFormat("id-ID").format(order.bill || order.totalPrice)}
                   </td>
                   <td className="py-4 px-4 border-b">
                     <span

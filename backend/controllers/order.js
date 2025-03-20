@@ -33,14 +33,15 @@ function calcPrice(orderItems, membership) {
   }
 
   const discount = Math.round(itemsPrice * discountRate);
-  const subtotal = itemsPrice + shippingPrice;
-  const totalPrice = Math.round(subtotal - discount);
+  const totalPrice = Math.round(itemsPrice - discount);
+  const bill = Math.round(totalPrice + shippingPrice)
 
   return {
     itemsPrice: Math.round(itemsPrice),
     shippingPrice: Math.round(shippingPrice),
     discount: Math.round(discount),
-    totalPrice,
+    totalPrice: Math.round(totalPrice),
+    bill
   };
 }
 
@@ -74,7 +75,7 @@ export const createOrder = asyncHandler(async (req, res) => {
     };
   });
 
-  const { itemsPrice, shippingPrice, totalPrice, discount } = calcPrice(
+  const { itemsPrice, shippingPrice, totalPrice, discount, bill } = calcPrice(
     dbOrderItems,
     membership
   );
@@ -89,6 +90,7 @@ export const createOrder = asyncHandler(async (req, res) => {
     shippingPrice,
     membership,
     totalPrice,
+    bill
   });
 
   const createdOrder = await order.save();
@@ -97,7 +99,7 @@ export const createOrder = asyncHandler(async (req, res) => {
   const orderDetails = {
     transaction_details: {
       order_id: orderId,
-      gross_amount: totalPrice,
+      gross_amount: bill,
     },
     customer_details: {
       first_name: req.user.username,
