@@ -11,6 +11,7 @@ router.post("/checkout", authenticate, order.createOrder);
 router.get("/", authenticate, authorizeAdmin, order.getAllOrder);
 router.get("/mine", authenticate, order.getMyOrder);
 router.get("/total-income", authenticate, order.calcTotalIncome);
+router.get("/total-income-combine", authenticate, order.calcTotalIncomeCombine);
 router.get("/total-income-by-date", authenticate, order.calcTotalProfitByDate);
 router.get("/total-income-by-month", authenticate, order.calcTotalProfitByMonth);
 router.get("/total-income-by-week", authenticate, order.calcTotalProfitByWeek);

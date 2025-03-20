@@ -11,7 +11,7 @@ import {
   useGetTotalSalesByWeekQuery,
   useGetTotalSalesByMonthQuery,
   useGetTotalSalesByYearQuery,
-  useGetIncomeQuery
+  useGetTotalIncomeCombineQuery
 } from "../../redux/api/orderApiSlice";
 import OrderList from "./OrderList";
 import Loader from "../../components/loader";
@@ -101,7 +101,7 @@ const AdminDashboard = () => {
   const { data: salesDetailWeekly } = useGetTotalSalesByWeekQuery();
   const { data: salesDetailMonthly } = useGetTotalSalesByMonthQuery();
   const { data: salesDetailYearly } = useGetTotalSalesByYearQuery();
-  const { data: income } = useGetIncomeQuery();
+  const { data: income } = useGetTotalIncomeCombineQuery();
 
   useEffect(() => {
     const now = new Date();

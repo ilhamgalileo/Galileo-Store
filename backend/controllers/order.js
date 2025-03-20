@@ -196,6 +196,59 @@ export const getMyOrder = asyncHandler(async (req, res) => {
   res.json(myOder);
 });
 
+export const calcTotalIncomeCombine = asyncHandler(async (req, res) => {
+  try {
+    const orders = await Order.find({ isPaid: true }).populate("orderItems.product");
+    const cashOrders = await CashOrder.find({ isPaid: true }).populate("items.product");
+
+    const calculateProfit = (orders, isCash = false) => {
+      return orders.reduce((totalIncome, order) => {
+        const items = isCash ? order.items : order.orderItems;
+
+        const totalPurchasePrice = items.reduce((acc, item) => {
+          const purchasePrice = item.product.purchasePrice || 0;
+          return acc + purchasePrice * (isCash ? item.quantity : item.qty);
+        }, 0);
+
+        const itemsPrice = items.reduce((acc, item) => {
+          return acc + item.price * (isCash ? item.quantity : item.qty);
+        }, 0);
+
+        let discountRate = 0;
+        if (order.membership === "Platinum") {
+          discountRate = 0.07;
+        } else if (order.membership === "Gold") {
+          discountRate = 0.05;
+        } else if (order.membership === "Silver") {
+          discountRate = 0.03;
+        }
+
+        const discount = itemsPrice * discountRate;
+        const totalPrice = itemsPrice - discount;
+        const profit = Math.round(totalPrice - totalPurchasePrice);
+
+        return totalIncome + profit;
+      }, 0);
+    };
+
+    const totalOrderIncome = calculateProfit(orders);
+    const totalCashIncome = calculateProfit(cashOrders, true);
+    const totalIncome = totalOrderIncome + totalCashIncome;
+
+    res.json({
+      order: totalOrderIncome,
+      cash: totalCashIncome,
+      totalProfit: totalIncome,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Error calculating income.",
+      error: error.message,
+    });
+  }
+});
+
 export const calcTotalIncome = asyncHandler(async (req, res) => {
   try {
     const orders = await Order.find({ isPaid: true }).populate("orderItems.product");

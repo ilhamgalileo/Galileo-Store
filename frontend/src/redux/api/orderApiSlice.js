@@ -149,8 +149,16 @@ export const orderApiSlice = apiSlice.injectEndpoints({
       }),
     }),
 
+    getTotalIncomeCombine: builder.query({
+      query: () => `${ORDERS_URL}/total-income-combine`,
+    }),
+
     getTotalIncome: builder.query({
       query: () => `${ORDERS_URL}/total-income`,
+    }),
+
+    getTotalIncomeCash: builder.query({
+      query: () => `${CASH_ORDERS_URL}/total-income`,
     }),
 
     getTotalIncomeByDate: builder.query({
@@ -167,6 +175,22 @@ export const orderApiSlice = apiSlice.injectEndpoints({
 
     getTotalIncomeByWeek: builder.query({
       query: () => `${ORDERS_URL}/total-income-by-week`,
+    }),
+
+    getTotalIncomeCashByDate: builder.query({
+      query: () => `${CASH_ORDERS_URL}/total-income-cash-by-date`,
+    }),
+
+    getTotalIncomeCashByWeek: builder.query({
+      query: () => `${CASH_ORDERS_URL}/total-income-cash-by-week`,
+    }),
+
+    getTotalIncomeCashByMonth: builder.query({
+      query: () => `${CASH_ORDERS_URL}/total-income-cash-by-month`,
+    }),
+
+    getTotalIncomeCashByYear: builder.query({
+      query: () => `${CASH_ORDERS_URL}/total-income-cash-by-year`,
     }),
 
     getTotalOrder: builder.query({
@@ -215,11 +239,17 @@ export const {
   useGetStoreOrdersQuery,
   useGetCashOrderDetailsQuery,
   useGetCashOrdersQuery,
+  useGetTotalIncomeCombineQuery,
   useGetTotalIncomeQuery,
+  useGetTotalIncomeCashQuery,
   useGetTotalIncomeByDateQuery,
   useGetTotalIncomeByMonthQuery,
   useGetTotalIncomeByYearQuery, 
   useGetTotalIncomeByWeekQuery,
+  useGetTotalIncomeCashByDateQuery,
+  useGetTotalIncomeCashByMonthQuery,
+  useGetTotalIncomeCashByWeekQuery,
+  useGetTotalIncomeCashByYearQuery,
   useGetOrdersSalesByDateQuery,
   useGetTotalOrderQuery,
   useGetTotalSalesQuery,
