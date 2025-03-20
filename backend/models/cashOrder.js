@@ -26,6 +26,7 @@ const cashOrderSchema = mongoose.Schema(
     receivedAmount: { type: Number, required: true },
     change: { type: Number, required: true, default: 0 },
     isPaid: { type: Boolean, default: false },
+    paidAt: {type: Date},
     paymentMethod: { type: String, default: "cash", required: true },
     returnedItems: [
       {

@@ -133,7 +133,7 @@ const CashOrder = () => {
             <div className="text-gray-950 text-xs md:text-sm">
               <h3 className="font-bold text-sm md:text-xl md:mb-2.5 mb-0.5 mt-[1rem] md:mt-[5rem]">Order Information: </h3>
               <p className="mb-1">Order ID: {cashOrder._id}</p>
-              <p className="mb-1">Payment On:  {moment(cashOrder.createdAt).format("DD MMMM YYYY")}</p>
+              <p className="mb-1">Payment On:  {moment(cashOrder.paidAt).format("DD MMMM YYYY")}</p>
               <p className="mb-1">Payment Status: {cashOrder.isPaid ?
                 <span className="text-green-700">Paid on: {moment(cashOrder.paidAt).format("DD MMMM YYYY")}</span> :
                 <span className="text-red-700">Cancelled</span>
