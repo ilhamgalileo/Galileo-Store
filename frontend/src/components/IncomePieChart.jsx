@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import Chart from "react-apexcharts";
 import {
-  useGetTotalIncomeQuery,
   useGetTotalIncomeByDateQuery,
   useGetTotalIncomeByWeekQuery,
   useGetTotalIncomeByMonthQuery,
@@ -10,32 +9,36 @@ import {
   useGetTotalIncomeCashByDateQuery,
   useGetTotalIncomeCashByWeekQuery,
   useGetTotalIncomeCashByMonthQuery,
-  useGetTotalIncomeCashByYearQuery
+  useGetTotalIncomeCashByYearQuery,
+  useGetTotalIncomeStoreByDateQuery,
+  useGetTotalIncomeStoreByMonthQuery,
+  useGetTotalIncomeStoreByYearQuery,
+  useGetTotalIncomeStoreByWeekQuery,
 } from "../redux/api/orderApiSlice";
 
 const IncomePieChart = () => {
   const [timeRange, setTimeRange] = useState("totalCombineIncome");
   const [paymentMethod, setPaymentMethod] = useState("all");
 
-  // Query untuk pendapatan cash
   const { data: incomeCashByDate } = useGetTotalIncomeCashByDateQuery();
   const { data: incomeCashByWeek } = useGetTotalIncomeCashByWeekQuery();
   const { data: incomeCashByMonth } = useGetTotalIncomeCashByMonthQuery();
   const { data: incomeCashByYear } = useGetTotalIncomeCashByYearQuery();
 
-  // Query untuk pendapatan order
   const { data: incomeOrderByDate } = useGetTotalIncomeByDateQuery();
   const { data: incomeOrderByWeek } = useGetTotalIncomeByWeekQuery();
   const { data: incomeOrderByMonth } = useGetTotalIncomeByMonthQuery();
   const { data: incomeOrderByYear } = useGetTotalIncomeByYearQuery();
 
-  // Query untuk pendapatan gabungan (cash + order)
+  const { data: incomeStoreByDate } = useGetTotalIncomeStoreByDateQuery();
+  const { data: incomeStoreByMonth } = useGetTotalIncomeStoreByMonthQuery();
+  const { data: incomeStoreByYear } = useGetTotalIncomeStoreByYearQuery();
+  const { data: incomeStoreByWeek } = useGetTotalIncomeStoreByWeekQuery();
+
   const { data: totalCombineIncome } = useGetTotalIncomeCombineQuery();
 
-  // Fungsi untuk memformat mata uang
   const formatRupiah = (value) => `Rp${value.toLocaleString("id-ID")}`;
 
-  // Fungsi untuk mendapatkan data pendapatan berdasarkan metode pembayaran
   const getIncomeData = () => {
     switch (timeRange) {
       case "daily":
@@ -43,10 +46,13 @@ const IncomePieChart = () => {
           return incomeCashByDate ? incomeCashByDate.map((item) => item.totalProfit) : [0];
         } else if (paymentMethod === "order") {
           return incomeOrderByDate ? incomeOrderByDate.map((item) => item.totalProfit) : [0];
+        } else if (paymentMethod === "store") {
+          return incomeStoreByDate ? incomeStoreByDate.map((item) => item.totalProfit) : [0];
         } else {
           return [
             incomeCashByDate?.reduce((sum, item) => sum + item.totalProfit, 0) || 0,
             incomeOrderByDate?.reduce((sum, item) => sum + item.totalProfit, 0) || 0,
+            incomeStoreByDate?.reduce((sum, item) => sum + item.totalProfit, 0) || 0,
           ];
         }
       case "weekly":
@@ -54,10 +60,13 @@ const IncomePieChart = () => {
           return incomeCashByWeek ? incomeCashByWeek.map((item) => item.totalProfit) : [0];
         } else if (paymentMethod === "order") {
           return incomeOrderByWeek ? incomeOrderByWeek.map((item) => item.totalProfit) : [0];
+        } else if (paymentMethod === "store") {
+          return incomeStoreByWeek ? incomeStoreByWeek.map((item) => item.totalProfit) : [0];
         } else {
           return [
             incomeCashByWeek?.reduce((sum, item) => sum + item.totalProfit, 0) || 0,
             incomeOrderByWeek?.reduce((sum, item) => sum + item.totalProfit, 0) || 0,
+            incomeStoreByWeek?.reduce((sum, item) => sum + item.totalProfit, 0) || 0,
           ];
         }
       case "monthly":
@@ -65,10 +74,13 @@ const IncomePieChart = () => {
           return incomeCashByMonth ? incomeCashByMonth.map((item) => item.totalProfit) : [0];
         } else if (paymentMethod === "order") {
           return incomeOrderByMonth ? incomeOrderByMonth.map((item) => item.totalProfit) : [0];
+        } else if (paymentMethod === "store") {
+          return incomeStoreByMonth ? incomeStoreByMonth.map((item) => item.totalProfit) : [0];
         } else {
           return [
             incomeCashByMonth?.reduce((sum, item) => sum + item.totalProfit, 0) || 0,
             incomeOrderByMonth?.reduce((sum, item) => sum + item.totalProfit, 0) || 0,
+            incomeStoreByMonth?.reduce((sum, item) => sum + item.totalProfit, 0) || 0,
           ];
         }
       case "yearly":
@@ -76,22 +88,24 @@ const IncomePieChart = () => {
           return incomeCashByYear ? incomeCashByYear.map((item) => item.totalProfit) : [0];
         } else if (paymentMethod === "order") {
           return incomeOrderByYear ? incomeOrderByYear.map((item) => item.totalProfit) : [0];
+        } else if (paymentMethod === "store") {
+          return incomeStoreByYear ? incomeStoreByYear.map((item) => item.totalProfit) : [0];
         } else {
           return [
             incomeCashByYear?.reduce((sum, item) => sum + item.totalProfit, 0) || 0,
             incomeOrderByYear?.reduce((sum, item) => sum + item.totalProfit, 0) || 0,
+            incomeStoreByYear?.reduce((sum, item) => sum + item.totalProfit, 0) || 0,
           ];
         }
       case "totalCombineIncome":
         return totalCombineIncome
-          ? [totalCombineIncome.order, totalCombineIncome.cash]
-          : [0, 0];
+          ? [totalCombineIncome.order, totalCombineIncome.cash, totalCombineIncome.store]
+          : [0, 0, 0];
       default:
         return [0];
     }
   };
 
-  // Fungsi untuk mendapatkan label berdasarkan metode pembayaran
   const getLabels = () => {
     switch (timeRange) {
       case "daily":
@@ -99,35 +113,43 @@ const IncomePieChart = () => {
           return incomeCashByDate?.map((item) => item._id) || ["No Data"];
         } else if (paymentMethod === "order") {
           return incomeOrderByDate?.map((item) => item._id) || ["No Data"];
+        } else if (paymentMethod === "store") {
+          return incomeStoreByDate?.map((item) => item._id) || ["No Data"];
         } else {
-          return ["Cash", "Order"];
+          return ["Cash", "Order", "Store"];
         }
       case "weekly":
         if (paymentMethod === "cash") {
           return incomeCashByWeek?.map((item) => `Week ${item._id?.week}`) || ["No Data"];
         } else if (paymentMethod === "order") {
           return incomeOrderByWeek?.map((item) => `Week ${item._id?.week}`) || ["No Data"];
+        } else if (paymentMethod === "store") {
+          return incomeStoreByWeek?.map((item) => `Week ${item._id?.week}`) || ["No Data"]
         } else {
-          return ["Cash", "Order"];
+          return ["Cash", "Order", "Store"];
         }
       case "monthly":
         if (paymentMethod === "cash") {
           return incomeCashByMonth?.map((item) => item._id) || ["No Data"];
         } else if (paymentMethod === "order") {
           return incomeOrderByMonth?.map((item) => item._id) || ["No Data"];
+        } else if (paymentMethod === "store") {
+          return incomeStoreByMonth?.map((item) => item._id) || ["No Data"];
         } else {
-          return ["Cash", "Order"];
+          return ["Cash", "Order", "Store"];
         }
       case "yearly":
         if (paymentMethod === "cash") {
           return incomeCashByYear?.map((item) => item._id) || ["No Data"];
         } else if (paymentMethod === "order") {
           return incomeOrderByYear?.map((item) => item._id) || ["No Data"];
+        } else if (paymentMethod === "store") {
+          return incomeStoreByYear?.map((item) => item._id) || ["No Data"];
         } else {
-          return ["Cash", "Order"];
+          return ["Cash", "Order", "Store"];
         }
       case "totalCombineIncome":
-        return ["Order", "Cash"];
+        return ["Order", "Cash", "Store"];
       default:
         return ["Total Income"];
     }
@@ -191,6 +213,7 @@ const IncomePieChart = () => {
             <option value="all">All Methods</option>
             <option value="cash">Cash</option>
             <option value="order">Order</option>
+            <option value="store">Store</option>
           </select>
         </div>
       </div>
@@ -202,6 +225,6 @@ const IncomePieChart = () => {
       />
     </div>
   );
-}
+};
 
 export default IncomePieChart;

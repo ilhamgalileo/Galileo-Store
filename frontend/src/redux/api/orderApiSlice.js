@@ -217,6 +217,22 @@ export const orderApiSlice = apiSlice.injectEndpoints({
       query: () => `${ORDERS_URL}/total-sales-by-week`,
     }),
 
+    getTotalIncomeStoreByDate: builder.query({
+      query: () => `${STORE_ORDERS_URL}/total-income-store-by-date`,
+    }),
+
+    getTotalIncomeStoreByWeek: builder.query({
+      query: () => `${STORE_ORDERS_URL}/total-income-store-by-week`,
+    }),
+
+    getTotalIncomeStoreByMonth: builder.query({
+      query: () => `${STORE_ORDERS_URL}/total-income-store-by-month`,
+    }),
+
+    getTotalIncomeStoreByYear: builder.query({
+      query: () => `${STORE_ORDERS_URL}/total-income-store-by-year`,
+    }),
+
     getMemberByEmail: builder.query({
       query: (email) => `${CASH_ORDERS_URL}/${email}/membership`,
     }),
@@ -250,6 +266,10 @@ export const {
   useGetTotalIncomeCashByMonthQuery,
   useGetTotalIncomeCashByWeekQuery,
   useGetTotalIncomeCashByYearQuery,
+  useGetTotalIncomeStoreByDateQuery,
+  useGetTotalIncomeStoreByMonthQuery,
+  useGetTotalIncomeStoreByWeekQuery,
+  useGetTotalIncomeStoreByYearQuery,
   useGetOrdersSalesByDateQuery,
   useGetTotalOrderQuery,
   useGetTotalSalesQuery,

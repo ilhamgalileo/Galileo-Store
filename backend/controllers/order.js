@@ -200,8 +200,9 @@ export const calcTotalIncomeCombine = asyncHandler(async (req, res) => {
   try {
     const orders = await Order.find({ isPaid: true }).populate("orderItems.product");
     const cashOrders = await CashOrder.find({ isPaid: true }).populate("items.product");
+    const storeOrders = await OrderStore.find({ isPaid: true }).populate("orderItems.product");
 
-    const calculateProfit = (orders, isCash = false) => {
+    const calculateProfit = (orders, isCash = false, isStore = false) => {
       return orders.reduce((totalIncome, order) => {
         const items = isCash ? order.items : order.orderItems;
 
@@ -215,12 +216,14 @@ export const calcTotalIncomeCombine = asyncHandler(async (req, res) => {
         }, 0);
 
         let discountRate = 0;
-        if (order.membership === "Platinum") {
-          discountRate = 0.07;
-        } else if (order.membership === "Gold") {
-          discountRate = 0.05;
-        } else if (order.membership === "Silver") {
-          discountRate = 0.03;
+        if (!isStore) {
+          if (order.membership === "Platinum") {
+            discountRate = 0.07;
+          } else if (order.membership === "Gold") {
+            discountRate = 0.05;
+          } else if (order.membership === "Silver") {
+            discountRate = 0.03;
+          }
         }
 
         const discount = itemsPrice * discountRate;
@@ -233,11 +236,13 @@ export const calcTotalIncomeCombine = asyncHandler(async (req, res) => {
 
     const totalOrderIncome = calculateProfit(orders);
     const totalCashIncome = calculateProfit(cashOrders, true);
-    const totalIncome = totalOrderIncome + totalCashIncome;
+    const totalStoreIncome = calculateProfit(storeOrders, false, true);
+    const totalIncome = totalOrderIncome + totalCashIncome + totalStoreIncome;
 
     res.json({
       order: totalOrderIncome,
       cash: totalCashIncome,
+      store: totalStoreIncome,
       totalProfit: totalIncome,
     });
   } catch (error) {
