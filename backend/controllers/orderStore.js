@@ -44,7 +44,7 @@ export const createInStoreOrder = asyncHandler(async (req, res) => {
     };
   });
 
-  const {  totalPrice } = calcPrice(dbOrderItems);
+  const { totalPrice } = calcPrice(dbOrderItems);
 
   const order = new OrderStore({
     orderItems: dbOrderItems,
@@ -99,7 +99,10 @@ export const createInStoreOrder = asyncHandler(async (req, res) => {
 });
 
 export const markOrderIsPay = asyncHandler(async (req, res) => {
-  const order = await OrderStore.findById.populate("user", "username");
+  const order = await OrderStore.findById(req.params.id).populate(
+    "user",
+    "username"
+  );
 
   if (order) {
     const { status, updatedAt, id, payment_type } = req.body;
@@ -118,7 +121,7 @@ export const markOrderIsPay = asyncHandler(async (req, res) => {
         const product = await Product.findById(item.product);
         if (product) {
           product.countInStock -= item.qty;
-          product.sold -= item.qty;
+          product.sold += item.qty;
 
           if (product.countInStock < 0) {
             res.status(400);
@@ -138,6 +141,292 @@ export const markOrderIsPay = asyncHandler(async (req, res) => {
   } else {
     res.status(404);
     throw new Error("Order not found");
+  }
+});
+
+export const calcTotalIncomeStore = asyncHandler(async (req, res) => {
+  try {
+    const orders = await OrderStore.find({ isPaid: true }).populate(
+      "orderItems.product"
+    );
+
+    let totalIncome = 0;
+
+    orders.forEach((order) => {
+      const totalPurchasePrice = order.orderItems.reduce((acc, item) => {
+        const purchasePrice = item.product.purchasePrice || 0;
+        return acc + purchasePrice * item.qty;
+      }, 0);
+
+      const itemsPrice = order.orderItems.reduce((acc, item) => {
+        return acc + item.price * item.qty;
+      }, 0);
+
+      let discountRate = 0;
+      if (order.membership === "Platinum") {
+        discountRate = 0.07;
+      } else if (order.membership === "Gold") {
+        discountRate = 0.05;
+      } else if (order.membership === "Silver") {
+        discountRate = 0.03;
+      }
+
+      const discount = itemsPrice * discountRate;
+
+      const totalPrice = itemsPrice - discount;
+
+      const profit = Math.round(totalPrice - totalPurchasePrice);
+
+      totalIncome += profit;
+    });
+
+    res.json({
+      success: true,
+      totalProfit: totalIncome,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Error calculating income.",
+      error: error.message,
+    });
+  }
+});
+
+export const calcTotalProfitByWeekStore = asyncHandler(async (req, res) => {
+  try {
+    const profitByWeekOrderStore = await OrderStore.aggregate([
+      {
+        $match: { isPaid: true },
+      },
+      {
+        $unwind: "$orderItems",
+      },
+      {
+        $lookup: {
+          from: "products",
+          localField: "orderItems.product",
+          foreignField: "_id",
+          as: "productDetails",
+        },
+      },
+      {
+        $unwind: "$productDetails",
+      },
+      {
+        $group: {
+          _id: {
+            month: { $dateToString: { format: "%Y-%m", date: "$paidAt" } },
+            week: { $ceil: { $divide: [{ $dayOfMonth: "$paidAt" }, 7] } },
+          },
+          totalItemsPrice: {
+            $sum: { $multiply: ["$orderItems.price", "$orderItems.qty"] },
+          },
+          totalPurchasePrice: {
+            $sum: {
+              $multiply: ["$productDetails.purchasePrice", "$orderItems.qty"],
+            },
+          },
+        },
+      },
+      {
+        $project: {
+          totalProfit: {
+            $round: [
+              {
+                $subtract: ["$totalItemsPrice", "$totalPurchasePrice"],
+              },
+              0,
+            ],
+          },
+        },
+      },
+    ]);
+
+    res.json(profitByWeekOrderStore);
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Error calculating profit by date.",
+      error: error.message,
+    });
+  }
+});
+
+export const calcTotalProfitByDateStore = asyncHandler(async (req, res) => {
+  try {
+    const profitByDateOrderStore = await OrderStore.aggregate([
+      {
+        $match: { isPaid: true },
+      },
+      {
+        $unwind: "$orderItems",
+      },
+      {
+        $lookup: {
+          from: "products",
+          localField: "orderItems.product",
+          foreignField: "_id",
+          as: "productDetails",
+        },
+      },
+      {
+        $unwind: "$productDetails",
+      },
+      {
+        $group: {
+          _id: {
+            $dateToString: { format: "%Y-%m-%d", date: "$paidAt" },
+          },
+          totalItemsPrice: {
+            $sum: { $multiply: ["$orderItems.price", "$orderItems.qty"] },
+          },
+          totalPurchasePrice: {
+            $sum: {
+              $multiply: ["$productDetails.purchasePrice", "$orderItems.qty"],
+            },
+          },
+        },
+      },
+      {
+        $project: {
+          totalProfit: {
+            $round: [
+              {
+                $subtract: ["$totalItemsPrice", "$totalPurchasePrice"],
+              },
+              0,
+            ],
+          },
+        },
+      },
+    ]);
+
+    res.json(profitByDateOrderStore);
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Error calculating profit by date.",
+      error: error.message,
+    });
+  }
+});
+
+export const calcTotalProfitByMonthStore = asyncHandler(async (req, res) => {
+  try {
+    const profitByMonthOrderStore = await OrderStore.aggregate([
+      {
+        $match: { isPaid: true },
+      },
+      {
+        $unwind: "$orderItems",
+      },
+      {
+        $lookup: {
+          from: "products",
+          localField: "orderItems.product",
+          foreignField: "_id",
+          as: "productDetails",
+        },
+      },
+      {
+        $unwind: "$productDetails",
+      },
+      {
+        $group: {
+          _id: {
+            $dateToString: { format: "%Y-%m", date: "$paidAt" },
+          },
+          totalItemsPrice: {
+            $sum: { $multiply: ["$orderItems.price", "$orderItems.qty"] },
+          },
+          totalPurchasePrice: {
+            $sum: {
+              $multiply: ["$productDetails.purchasePrice", "$orderItems.qty"],
+            },
+          },
+        },
+      },
+      {
+        $project: {
+          totalProfit: {
+            $round: [
+              {
+                $subtract: ["$totalItemsPrice", "$totalPurchasePrice"],
+              },
+              0,
+            ],
+          },
+        },
+      },
+    ]);
+
+    res.json(profitByMonthOrderStore);
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Error calculating profit by date.",
+      error: error.message,
+    });
+  }
+});
+
+export const calcTotalProfitByYearStore = asyncHandler(async (req, res) => {
+  try {
+    const profitByYearOrderStore = await OrderStore.aggregate([
+      {
+        $match: { isPaid: true },
+      },
+      {
+        $unwind: "$orderItems",
+      },
+      {
+        $lookup: {
+          from: "products",
+          localField: "orderItems.product",
+          foreignField: "_id",
+          as: "productDetails",
+        },
+      },
+      {
+        $unwind: "$productDetails",
+      },
+      {
+        $group: {
+          _id: {
+            $dateToString: { format: "%Y", date: "$paidAt" },
+          },
+          totalItemsPrice: {
+            $sum: { $multiply: ["$orderItems.price", "$orderItems.qty"] },
+          },
+          totalPurchasePrice: {
+            $sum: {
+              $multiply: ["$productDetails.purchasePrice", "$orderItems.qty"],
+            },
+          },
+        },
+      },
+      {
+        $project: {
+          totalProfit: {
+            $round: [
+              {
+                $subtract: ["$totalItemsPrice", "$totalPurchasePrice"],
+              },
+              0,
+            ],
+          },
+        },
+      },
+    ]);
+
+    res.json(profitByYearOrderStore);
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Error calculating profit by date.",
+      error: error.message,
+    });
   }
 });
 
