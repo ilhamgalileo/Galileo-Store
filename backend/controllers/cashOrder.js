@@ -72,6 +72,7 @@ export const createCashOrder = async (req, res) => {
     }
 
     const cashOrder = await CashOrder.create({
+      cashier: req.user._id,
       customerName: email || customerName,
       phone,
       address: cust_address,
@@ -131,10 +132,9 @@ export const getUserMembership = asyncHandler(async (req, res) => {
 
 export const getCashOrderById = asyncHandler(async (req, res) => {
   const id = req.params.id;
-  const data = await CashOrder.findById(id).populate(
-    "items.product",
-    "name price images"
-  );
+  const data = await CashOrder.findById(id)
+    .populate("items.product", "name price images")
+    .populate("cashier", "username");
 
   if (data) {
     res.send(data);
@@ -145,7 +145,9 @@ export const getCashOrderById = asyncHandler(async (req, res) => {
 
 export const calcTotalIncomeCash = asyncHandler(async (req, res) => {
   try {
-    const orders = await CashOrder.find({ isPaid: true }).populate("items.product");
+    const orders = await CashOrder.find({ isPaid: true }).populate(
+      "items.product"
+    );
 
     let totalIncome = 0;
 
@@ -174,7 +176,7 @@ export const calcTotalIncomeCash = asyncHandler(async (req, res) => {
 
       const profit = Math.round(totalPrice - totalPurchasePrice);
 
-      Math.round(totalIncome += profit);
+      Math.round((totalIncome += profit));
     });
 
     res.json({
@@ -194,10 +196,10 @@ export const calcTotalProfitByDateCash = asyncHandler(async (req, res) => {
   try {
     const profitByDateOrder = await CashOrder.aggregate([
       {
-        $match: { isPaid: true }, 
+        $match: { isPaid: true },
       },
       {
-        $unwind: "$items", 
+        $unwind: "$items",
       },
       {
         $lookup: {
@@ -213,13 +215,15 @@ export const calcTotalProfitByDateCash = asyncHandler(async (req, res) => {
       {
         $group: {
           _id: {
-            $dateToString: { format: "%Y-%m-%d", date: "$paidAt" }, 
+            $dateToString: { format: "%Y-%m-%d", date: "$paidAt" },
           },
           totalItemsPrice: {
-            $sum: { $multiply: ["$items.price", "$items.quantity"] }, 
+            $sum: { $multiply: ["$items.price", "$items.quantity"] },
           },
           totalPurchasePrice: {
-            $sum: { $multiply: ["$productDetails.purchasePrice", "$items.quantity"] },
+            $sum: {
+              $multiply: ["$productDetails.purchasePrice", "$items.quantity"],
+            },
           },
           totalDiscount: {
             $sum: {
@@ -233,7 +237,9 @@ export const calcTotalProfitByDateCash = asyncHandler(async (req, res) => {
                       $cond: [
                         { $eq: ["$membership", "Gold"] },
                         0.05,
-                        { $cond: [{ $eq: ["$membership", "Silver"] }, 0.03, 0] },
+                        {
+                          $cond: [{ $eq: ["$membership", "Silver"] }, 0.03, 0],
+                        },
                       ],
                     },
                   ],
@@ -274,10 +280,10 @@ export const calcTotalProfitByMonthCash = asyncHandler(async (req, res) => {
   try {
     const profitByDateOrder = await CashOrder.aggregate([
       {
-        $match: { isPaid: true }, 
+        $match: { isPaid: true },
       },
       {
-        $unwind: "$items", 
+        $unwind: "$items",
       },
       {
         $lookup: {
@@ -293,13 +299,15 @@ export const calcTotalProfitByMonthCash = asyncHandler(async (req, res) => {
       {
         $group: {
           _id: {
-            $dateToString: { format: "%Y-%m", date: "$paidAt" }, 
+            $dateToString: { format: "%Y-%m", date: "$paidAt" },
           },
           totalItemsPrice: {
-            $sum: { $multiply: ["$items.price", "$items.quantity"] }, 
+            $sum: { $multiply: ["$items.price", "$items.quantity"] },
           },
           totalPurchasePrice: {
-            $sum: { $multiply: ["$productDetails.purchasePrice", "$items.quantity"] },
+            $sum: {
+              $multiply: ["$productDetails.purchasePrice", "$items.quantity"],
+            },
           },
           totalDiscount: {
             $sum: {
@@ -313,7 +321,9 @@ export const calcTotalProfitByMonthCash = asyncHandler(async (req, res) => {
                       $cond: [
                         { $eq: ["$membership", "Gold"] },
                         0.05,
-                        { $cond: [{ $eq: ["$membership", "Silver"] }, 0.03, 0] },
+                        {
+                          $cond: [{ $eq: ["$membership", "Silver"] }, 0.03, 0],
+                        },
                       ],
                     },
                   ],
@@ -354,10 +364,10 @@ export const calcTotalProfitByYearCash = asyncHandler(async (req, res) => {
   try {
     const profitByDateOrder = await CashOrder.aggregate([
       {
-        $match: { isPaid: true }, 
+        $match: { isPaid: true },
       },
       {
-        $unwind: "$items", 
+        $unwind: "$items",
       },
       {
         $lookup: {
@@ -373,13 +383,15 @@ export const calcTotalProfitByYearCash = asyncHandler(async (req, res) => {
       {
         $group: {
           _id: {
-            $dateToString: { format: "%Y", date: "$paidAt" }, 
+            $dateToString: { format: "%Y", date: "$paidAt" },
           },
           totalItemsPrice: {
-            $sum: { $multiply: ["$items.price", "$items.quantity"] }, 
+            $sum: { $multiply: ["$items.price", "$items.quantity"] },
           },
           totalPurchasePrice: {
-            $sum: { $multiply: ["$productDetails.purchasePrice", "$items.quantity"] },
+            $sum: {
+              $multiply: ["$productDetails.purchasePrice", "$items.quantity"],
+            },
           },
           totalDiscount: {
             $sum: {
@@ -393,7 +405,9 @@ export const calcTotalProfitByYearCash = asyncHandler(async (req, res) => {
                       $cond: [
                         { $eq: ["$membership", "Gold"] },
                         0.05,
-                        { $cond: [{ $eq: ["$membership", "Silver"] }, 0.03, 0] },
+                        {
+                          $cond: [{ $eq: ["$membership", "Silver"] }, 0.03, 0],
+                        },
                       ],
                     },
                   ],
@@ -434,10 +448,10 @@ export const calcTotalProfitByWeekCash = asyncHandler(async (req, res) => {
   try {
     const profitByDateOrder = await CashOrder.aggregate([
       {
-        $match: { isPaid: true }, 
+        $match: { isPaid: true },
       },
       {
-        $unwind: "$items", 
+        $unwind: "$items",
       },
       {
         $lookup: {
@@ -457,10 +471,12 @@ export const calcTotalProfitByWeekCash = asyncHandler(async (req, res) => {
             week: { $ceil: { $divide: [{ $dayOfMonth: "$paidAt" }, 7] } },
           },
           totalItemsPrice: {
-            $sum: { $multiply: ["$items.price", "$items.quantity"] }, 
+            $sum: { $multiply: ["$items.price", "$items.quantity"] },
           },
           totalPurchasePrice: {
-            $sum: { $multiply: ["$productDetails.purchasePrice", "$items.quantity"] },
+            $sum: {
+              $multiply: ["$productDetails.purchasePrice", "$items.quantity"],
+            },
           },
           totalDiscount: {
             $sum: {
@@ -474,7 +490,9 @@ export const calcTotalProfitByWeekCash = asyncHandler(async (req, res) => {
                       $cond: [
                         { $eq: ["$membership", "Gold"] },
                         0.05,
-                        { $cond: [{ $eq: ["$membership", "Silver"] }, 0.03, 0] },
+                        {
+                          $cond: [{ $eq: ["$membership", "Silver"] }, 0.03, 0],
+                        },
                       ],
                     },
                   ],

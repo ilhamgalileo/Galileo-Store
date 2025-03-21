@@ -21,9 +21,8 @@ const OrderList = () => {
 
   const StatusBadge = ({ isComplete, label }) => (
     <span
-      className={`px-3 py-1 rounded-full text-sm font-medium ${
-        isComplete ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
-      }`}
+      className={`px-3 py-1 rounded-full text-sm font-medium ${isComplete ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
+        }`}
     >
       {label}
     </span>
@@ -215,7 +214,12 @@ const OrderList = () => {
                           {order.user ? order.user.username : "N/A"}
                         </td>
                         <td className="whitespace-nowrap px-3 py-4 text-sm text-white">
-                          Rp{new Intl.NumberFormat("id-ID").format(order.bill || order.totalPrice)}
+                          Rp
+                          {new Intl.NumberFormat("id-ID").format(
+                            order.paymentMethod === "cash"
+                              ? order.totalAmount || 0
+                              : order.bill || order.totalPrice || 0
+                          )}
                         </td>
                         <td className="whitespace-nowrap px-3 py-4 text-sm text-white">
                           {order.createdAt ? new Date(order.createdAt).toLocaleDateString() : "N/A"}

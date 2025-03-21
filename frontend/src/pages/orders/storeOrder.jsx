@@ -142,7 +142,8 @@ const StoreOrder = () => {
                         </div>
                         <div className="text-gray-900 absolute md:top-[9.5rem]  right-[1rem] md:right-[7rem] text-xs md:text-sm">
                             <h3 className="text-xs md:text-xl font-bold mb-0.5 md:mb-2.5">Cashier: </h3>
-                            <p className="mb-1">name: {order?.user?.username || "Unknown"}</p>                        </div>
+                            <p className="mb-1">name: {order?.user?.username || "Unknown"}</p>
+                        </div>
                     </div>
 
                     <div className="overflow-x-auto">
@@ -267,7 +268,7 @@ const StoreOrder = () => {
                         <div className="flex-1">
                             <div className="p-4 rounded-lg text-gray-950 text-xs md:text-sm">
                                 <h3 className="text-sm md:text-lg font-medium mb-1.5">Summary: </h3>
-                               
+
                                 <div className="flex justify-between mt-2">
                                     <p>Total:</p>
                                     <strong>Rp{new Intl.NumberFormat('id-ID').format(order.totalPrice)}</strong>

@@ -145,6 +145,9 @@ const CashOrder = () => {
               {cashOrder.customerName && (
                 <p className="mb-1">Buyer: {cashOrder.customerName}</p>
               )}
+               {cashOrder.cashier && (
+                <p className="mb-1">Cashier: {cashOrder.cashier?.username}</p>
+              )}
               {cashOrder.address && (
                 <p className="mb-1">Address: {cashOrder.address}</p>
               )}

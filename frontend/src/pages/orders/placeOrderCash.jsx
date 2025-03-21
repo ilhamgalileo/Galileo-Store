@@ -9,6 +9,7 @@ import { useCreateCashOrderMutation, useGetMemberByEmailQuery } from "../../redu
 import { clearCartItems } from "../../redux/features/cart/cartSlice";
 
 const PlaceCashOrder = () => {
+  const { userInfo } = useSelector((state) => state.auth);
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const cart = useSelector((state) => state.cart);
@@ -124,6 +125,7 @@ const PlaceCashOrder = () => {
       const discount = calculateDiscount(itemsPrice, membership);
 
       const res = await createCashOrder({
+        cashier: userInfo.user._id,
         customerName: cashDetails.customerName,
         phone: cashDetails.phone,
         cust_address: cashDetails.cust_address,
