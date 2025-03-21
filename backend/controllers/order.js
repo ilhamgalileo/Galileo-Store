@@ -1060,7 +1060,7 @@ export const markOrderAsReturned = asyncHandler(async (req, res) => {
     }
   }
 
-  if (order.shippingPrice > 0) {
+  if (!order.isDelivered) {
     const totalWeight = order.orderItems.reduce(
       (acc, item) => acc + (item.weight || 0) * item.qty,
       0
@@ -1070,8 +1070,8 @@ export const markOrderAsReturned = asyncHandler(async (req, res) => {
       totalWeight < 1000 ? 0 : Math.ceil(totalWeight / 1000) * 15000;
 
     const shippingRefund = order.shippingPrice - newShippingPrice;
-    totalRefund += shippingRefund;
-    order.shippingPrice = newShippingPrice;
+    totalRefund += shippingRefund; 
+    order.shippingPrice = newShippingPrice; 
   }
 
   order.totalPrice = Math.max(order.totalPrice - totalRefund, 0);
@@ -1082,7 +1082,6 @@ export const markOrderAsReturned = asyncHandler(async (req, res) => {
     order.isPaid = false;
     order.totalPrice = 0;
     order.itemsPrice = 0;
-    order.shippingPrice = 0;
   }
 
   await order.save();
@@ -1097,7 +1096,7 @@ export const markOrderAsReturned = asyncHandler(async (req, res) => {
   }
 
   res.json(order);
-})
+});
 
 export const markOrderIsDeliver = asyncHandler(async (req, res) => {
   const id = req.params.id;

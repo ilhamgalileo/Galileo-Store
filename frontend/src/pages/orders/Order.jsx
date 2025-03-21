@@ -299,12 +299,6 @@ const Order = () => {
                   <p>Shipping:</p>
                   <strong>Rp{new Intl.NumberFormat('id-ID').format(order.shippingPrice)}</strong>
                 </div>
-                {order.taxPrice > 0 && (
-                  <div className="flex justify-between mb-2">
-                    <p>Tax (PPN 11%):</p>
-                    <strong>Rp{new Intl.NumberFormat('id-ID').format(order.taxPrice)}</strong>
-                  </div>
-                )}
                 {order.discount > 0 && (
                   <div className="flex justify-between mt-2">
                     <p>Discount:</p>
