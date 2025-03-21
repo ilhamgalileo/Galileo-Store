@@ -150,7 +150,7 @@ const AdminDashboard = () => {
       tooltip: {
         theme: "dark",
         y: {
-          formatter: (value) => `Rp ${new Intl.NumberFormat("id-ID").format(value)}`,
+          formatter: (value) => `Rp${new Intl.NumberFormat("id-ID").format(value)}`,
         },
       },
       grid: {
@@ -166,7 +166,7 @@ const AdminDashboard = () => {
         categories: [],
         labels: {
           style: {
-            colors: "gray",
+            colors: "#9CA3AF",
             fontSize: "12px",
           },
         },
@@ -204,17 +204,18 @@ const AdminDashboard = () => {
         const currentDate = new Date();
         const startDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
         const endDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
-        categories = generateDateRange(startDate, endDate);
 
-        const salesMap = salesDetail.reduce((acc, item) => {
-          acc[item._id] = item.totalSales;
-          return acc;
-        }, {});
+        formattedSales = salesDetail
+          .filter((item) => {
+            const itemDate = new Date(item._id);
+            return itemDate >= startDate && itemDate <= endDate;
+          })
+          .map((item) => ({
+            x: item._id,
+            y: item.totalSales,
+          }));
 
-        formattedSales = categories.map((date) => ({
-          x: date,
-          y: salesMap[date] || 0,
-        }));
+        categories = formattedSales.map((item) => item.x);
       } else if (timeRange === "weekly") {
         const currentMonth = new Date().getMonth() + 1;
         categories = generateAllWeeksInMonth(currentMonth);
@@ -339,7 +340,7 @@ const AdminDashboard = () => {
             loading={loadingOrders}
           />
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2  gap-6 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-5">
           <div className="bg-neutral-800 rounded-lg shadow-lg p-6">
             <h2 className="text-lg font-bold text-white">Sales Trend ({timeRange})</h2>
             {chartConfig.series[0].data.length > 0 ? (
@@ -348,7 +349,7 @@ const AdminDashboard = () => {
               <div className="flex items-center justify-center h-[350px] text-gray-800">No sales data available</div>
             )}
           </div>
-          <div className="bg-neutral-800 rounded-lg shadow-lg p-6">
+          <div className="bg-neutral-800 rounded-lg shadow-lg">
             <IncomePieChart />
           </div>
         </div>
