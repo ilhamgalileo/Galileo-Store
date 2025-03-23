@@ -159,6 +159,7 @@ const Order = () => {
               <div className="text-gray-950 text-sm">
                 <p className="mb-1">Buyer: <strong>{order.user.username}</strong></p>
                 <p className="mb-1">Email: <strong>{order.user.email}</strong></p>
+                <p className="mb-1">Phone Number: <strong>{order.phone}</strong></p>
                 <p className="mb-1">Recipient Name: <strong>{order.shippingAddress.recipient}</strong></p>
                 <p className="mb-1">
                   Delivery Address: <strong>

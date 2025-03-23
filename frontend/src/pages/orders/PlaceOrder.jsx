@@ -22,6 +22,7 @@ const PlaceOrder = () => {
   const membership = userProfile?.membership || "none";
 
   const shippingAddress = userData?.shippingAddress?.[0];
+  const phone = userData?.phone
 
   const itemsPrice = cart.cartItems.reduce((acc, item) => acc + item.qty * item.price, 0) || 0;
   const totalWeight = cart.cartItems.reduce((acc, item) => acc + (item.weight || 0) * item.qty, 0);
@@ -80,6 +81,7 @@ const PlaceOrder = () => {
       discount: discount,
       totalPrice: totalPrice,
       membership: membership,
+      phone: phone,
       bill: bill
     }).unwrap();
 

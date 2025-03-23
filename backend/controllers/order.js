@@ -46,7 +46,7 @@ function calcPrice(orderItems, membership) {
 }
 
 export const createOrder = asyncHandler(async (req, res) => {
-  const { orderItems, shippingAddress, paymentMethod, membership } = req.body;
+  const { orderItems, shippingAddress, paymentMethod, membership, phone } = req.body;
 
   if (!orderItems || orderItems.length === 0) {
     res.status(400);
@@ -90,6 +90,7 @@ export const createOrder = asyncHandler(async (req, res) => {
     shippingPrice,
     membership,
     totalPrice,
+    phone,
     bill
   });
 
@@ -104,6 +105,7 @@ export const createOrder = asyncHandler(async (req, res) => {
     customer_details: {
       first_name: req.user.username,
       email: req.user.email,
+      phone: phone,
       billing_address: {
         first_name: req.user.username,
         city: shippingAddress.city,
