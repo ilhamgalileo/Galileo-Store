@@ -4,6 +4,7 @@ const cashOrderSchema = mongoose.Schema(
   {
     cashier: { type: mongoose.Schema.Types.ObjectId, required: true, ref: "User" },
     customerName: { type: String, default: null },
+    customerMemberName: {type: String, default: null},
     phone: { type: String, default: null },
     address: { type: String, default: null },
     membership: {

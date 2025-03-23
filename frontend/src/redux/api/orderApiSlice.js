@@ -233,8 +233,8 @@ export const orderApiSlice = apiSlice.injectEndpoints({
       query: () => `${STORE_ORDERS_URL}/total-income-store-by-year`,
     }),
 
-    getMemberByEmail: builder.query({
-      query: (email) => `${CASH_ORDERS_URL}/${email}/membership`,
+    getMemberByPhone: builder.query({
+      query: (phone) => `${CASH_ORDERS_URL}/${phone}/membership`,
     }),
 
     getIncome: builder.query({
@@ -283,7 +283,7 @@ export const {
   useReturnStoreOrderMutation,
   useGetOrdersQuery,
   useGetAllOrdersQuery,
-  useGetMemberByEmailQuery,
+  useGetMemberByPhoneQuery,
   useReturnCashOrderMutation,
   useGetIncomeQuery,
 } = orderApiSlice;

@@ -5,15 +5,15 @@ import { useDispatch, useSelector } from "react-redux";
 import Message from "../../components/Message";
 import ProgressSteps from "../../components/ProgressSteps";
 import Loader from "../../components/loader";
-import { useCreateCashOrderMutation, useGetMemberByEmailQuery } from "../../redux/api/orderApiSlice";
+import { useCreateCashOrderMutation, useGetMemberByPhoneQuery } from "../../redux/api/orderApiSlice";
 import { clearCartItems } from "../../redux/features/cart/cartSlice";
 
 const PlaceCashOrder = () => {
   const { userInfo } = useSelector((state) => state.auth);
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const [customerMemberName, setCustomerMemberName] = useState("");
   const cart = useSelector((state) => state.cart);
-
   const itemsPrice = cart.cartItems.reduce((acc, item) => acc + item.qty * item.price, 0) || 0;
 
   const [membership, setMembership] = useState("None");
@@ -22,13 +22,13 @@ const PlaceCashOrder = () => {
   const calculateDiscount = (itemsPrice, membership) => {
     switch (membership) {
       case "Platinum":
-        return Math.round(itemsPrice * 0.07); 
+        return Math.round(itemsPrice * 0.07);
       case "Gold":
         return Math.round(itemsPrice * 0.05);
       case "Silver":
         return Math.round(itemsPrice * 0.03);
       default:
-        return 0; 
+        return 0;
     }
   };
 
@@ -47,21 +47,21 @@ const PlaceCashOrder = () => {
     email: "",
   });
 
-  const [emailInput, setEmailInput] = useState("");
+  const [phoneInput, setPhoneInput] = useState("");
   const [isCheckingMembership, setIsCheckingMembership] = useState(false);
-  const [emailToCheck, setEmailToCheck] = useState("");
+  const [phoneToCheck, setPhoneToCheck] = useState("");
 
-  const { data: membershipData, refetch, isError } = useGetMemberByEmailQuery(emailToCheck, {
-    skip: !emailToCheck,
+  const { data: membershipData, refetch, isError } = useGetMemberByPhoneQuery(phoneToCheck, {
+    skip: !phoneToCheck,
   });
 
   const handleCheckMembership = async () => {
-    if (!emailInput) {
-      toast.error("Please enter an email address");
+    if (!phoneInput) {
+      toast.error("Please enter an phone number");
       return;
     }
     setIsCheckingMembership(true);
-    setEmailToCheck(emailInput);
+    setPhoneToCheck(phoneInput);
     try {
       await refetch();
     } catch (error) {
@@ -76,6 +76,7 @@ const PlaceCashOrder = () => {
   useEffect(() => {
     if (membershipData) {
       setMembership(membershipData.membership);
+      setCustomerMemberName(membershipData.username);
       toast.success(`Membership found: ${membershipData.membership}`);
     }
   }, [membershipData]);
@@ -97,8 +98,8 @@ const PlaceCashOrder = () => {
     }
   };
 
-  const handleEmailInputChange = (e) => {
-    setEmailInput(e.target.value);
+  const handlePhoneInputChange = (e) => {
+    setPhoneInput(e.target.value);
   };
 
   const placeOrderHandler = async () => {
@@ -133,9 +134,9 @@ const PlaceCashOrder = () => {
         orderItems,
         discount,
         totalAmount: totalPrice,
-        email: emailInput,
         membership,
-      }).unwrap();
+        customerMemberName
+      }).unwrap()
 
       dispatch(clearCartItems());
       toast.success("Order placed successfully!");
@@ -203,12 +204,12 @@ const PlaceCashOrder = () => {
                     </div>
                     <div
                       className={`text-sm font-medium ${membership === "Platinum"
-                          ? "text-purple-500"
-                          : membership === "Gold"
-                            ? "text-yellow-500"
-                            : membership === "Silver"
-                              ? "text-gray-400"
-                              : "text-white"
+                        ? "text-purple-500"
+                        : membership === "Gold"
+                          ? "text-yellow-500"
+                          : membership === "Silver"
+                            ? "text-gray-400"
+                            : "text-white"
                         }`}
                     >
                       Members with {membership} level receive a discount of {membership === "Platinum" ? "7%" : membership === "Gold" ? "5%" : "3%"}.
@@ -227,10 +228,10 @@ const PlaceCashOrder = () => {
               <div className="space-y-4">
                 <div className="flex gap-2">
                   <input
-                    type="email"
-                    value={emailInput}
-                    onChange={handleEmailInputChange}
-                    placeholder="Enter customer email"
+                    type="number"
+                    value={phoneInput}
+                    onChange={handlePhoneInputChange}
+                    placeholder="Enter customer phone"
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none"
                   />
                   <button

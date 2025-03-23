@@ -142,6 +142,9 @@ const CashOrder = () => {
 
             <div className="text-gray-900 absolute md:top-[9.5rem]  right-[1rem] md:right-[7rem] text-xs md:text-sm">
               <h3 className="text-xs md:text-xl font-bold mb-0.5 md:mb-2.5">Published for: </h3>
+              {cashOrder.customerMemberName && (
+                <p className="mb-1">Customer Member: {cashOrder.customerMemberName}</p>
+              )}
               {cashOrder.customerName && (
                 <p className="mb-1">Buyer: {cashOrder.customerName}</p>
               )}

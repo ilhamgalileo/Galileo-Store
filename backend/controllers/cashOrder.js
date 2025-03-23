@@ -10,8 +10,8 @@ export const createCashOrder = async (req, res) => {
     cust_address,
     orderItems,
     receivedAmount,
-    email,
     membership,
+    customerMemberName
   } = req.body;
 
   if (!receivedAmount) {
@@ -73,7 +73,8 @@ export const createCashOrder = async (req, res) => {
 
     const cashOrder = await CashOrder.create({
       cashier: req.user._id,
-      customerName: email || customerName,
+      customerName: customerName,
+      customerMemberName,
       phone,
       address: cust_address,
       items: validatedItems,
@@ -120,14 +121,14 @@ export const getAllOrderCash = asyncHandler(async (req, res) => {
 });
 
 export const getUserMembership = asyncHandler(async (req, res) => {
-  const { email } = req.params;
+  const { phone } = req.params;
 
-  const user = await User.findOne({ email }).select("membership");
+  const user = await User.findOne({ phone }).select("membership username");
 
   if (!user) {
     return res.status(404).json({ message: "user not found" });
   }
-  res.json({ membership: user.membership });
+  res.json({ membership: user.membership, username: user.username, });
 });
 
 export const getCashOrderById = asyncHandler(async (req, res) => {

@@ -12,6 +12,6 @@ router.get('/total-income-cash-by-year', authenticate, authorizeAdmin, cashOrder
 router.get('/all', authenticate, authorizeAdmin, cashOrder.getAllOrderCash)
 router.get('/:id', authenticate, authorizeAdmin, cashOrder.getCashOrderById)
 router.put('/:id/return', authenticate, authorizeAdmin, cashOrder.markOrderAsReturned)
-router.get('/:email/membership', authenticate, authorizeAdmin, cashOrder.getUserMembership)
+router.get('/:phone/membership', authenticate, authorizeAdmin, cashOrder.getUserMembership)
   
 export default router
