@@ -134,7 +134,7 @@ const StoreOrder = () => {
                             <p className="mb-1">Order ID: <strong>{order._id}</strong></p>
                             <p className="mb-1">Date: <strong>{moment(order.createdAt).format("DD MMMM YYYY")}</strong></p>
                             <p className="mb-1">Payment Status: <strong>{order.isPaid ?
-                                <span className="text-green-700">Paid on {moment(order.paidAt).format("DD MMMM YYYY")}</span> :
+                                <span className="text-green-700">Paid on {moment(order.paidAt).format("DD MMMM YYYY [at] HH:mm")}</span> :
                                 <span className="text-red-600">Cancelled</span>
                             }</strong></p>
                             <p className="mb-1">Method: <strong>{order.paymentMethod}</strong></p>
@@ -142,7 +142,7 @@ const StoreOrder = () => {
                         </div>
                         <div className="text-gray-900 absolute md:top-[9.5rem]  right-[1rem] md:right-[7rem] text-xs md:text-sm">
                             <h3 className="text-xs md:text-xl font-bold mb-0.5 md:mb-2.5">Cashier: </h3>
-                            <p className="mb-1">name: {order?.user?.username || "Unknown"}</p>
+                            <p className="mb-1">Name: {order?.user?.username || "Unknown"}</p>
                         </div>
                     </div>
 
@@ -255,7 +255,7 @@ const StoreOrder = () => {
                                     <div className="flex justify-between mb-1">
                                         <p>Return Date:</p>
                                         <strong>
-                                            {order.returnedItems[0]?.returnedAt ? moment(order.returnedItems[0].returnedAt).format("DD MMMM YYYY") : "Not Available"}
+                                            {order.returnedItems[0]?.returnedAt ? moment(order.returnedItems[0].returnedAt).format("DD MMMM YYYY [at] HH:mm") : "Not Available"}
                                         </strong>
                                     </div>
                                     <div className="flex justify-between mt-2 pt-2 border-t border-black">

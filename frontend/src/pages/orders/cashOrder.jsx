@@ -135,7 +135,7 @@ const CashOrder = () => {
               <p className="mb-1">Order ID: {cashOrder._id}</p>
               <p className="mb-1">Payment On:  {moment(cashOrder.paidAt).format("DD MMMM YYYY")}</p>
               <p className="mb-1">Payment Status: {cashOrder.isPaid ?
-                <span className="text-green-700">Paid on: {moment(cashOrder.paidAt).format("DD MMMM YYYY")}</span> :
+                <span className="text-green-700">Paid on: {moment(cashOrder.paidAt).format("DD MMMM YYYY [at] HH:mm")}</span> :
                 <span className="text-red-700">Cancelled</span>
               }</p>
             </div>
@@ -268,7 +268,7 @@ const CashOrder = () => {
                     <span>Return Date:</span>
                     <span>
                       {cashOrder.returnedItems[0]?.returnedAt
-                        ? moment(cashOrder.returnedItems[0].returnedAt).format("DD MMMM YYYY")
+                        ? moment(cashOrder.returnedItems[0].returnedAt).format("DD MMMM YYYY [at] HH:mm")
                         : "Not Available"}</span>
                   </div>
                   <div className="flex justify-between font-bold mt-2 pt-2 border-t border-black">

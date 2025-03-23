@@ -143,10 +143,17 @@ const Order = () => {
               <h3 className="font-bold text-xl mb-2.5 mt-[5rem]">Order Information: </h3>
               <p className="mb-1">Order ID: <strong>{order._id}</strong></p>
               <p className="mb-1">Date: <strong>{moment(order.createdAt).format("DD MMMM YYYY")}</strong></p>
-              <p className="mb-1">Payment Status: <strong>{order.isPaid ?
-                <span className="text-green-700">Paid on {moment(order.paidAt).format("DD MMMM YYYY")}</span> :
-                <span className="text-red-600">Cancelled</span>
-              }</strong></p>
+              <p className="mb-1">
+                Payment Status: <strong>{
+                  order.isPaid ? (
+                    <span className="text-green-700">
+                      Paid on {moment(order.paidAt).format("DD MMMM YYYY [at] HH:mm")}
+                    </span>
+                  ) : (
+                    <span className="text-red-600">Cancelled</span>
+                  )
+                }</strong>
+              </p>
               <p className="mb-1">Delivery Status: <strong>{order.isDelivered ?
                 <span className="text-green-700">On Process {moment(order.deliveredAt).format("DD MMMM YYYY")}</span> :
                 <span className="text-red-600">Pending</span>
