@@ -1,6 +1,5 @@
 import asyncHandler from "express-async-handler";
 import User from "../models/user.js";
-import { json } from "express";
 
 const WILAYAH_API_BASE = "https://wilayah.id/api";
 
@@ -58,7 +57,6 @@ export const getVillages = asyncHandler(async (req, res) => {
 
 export const getShippingAddress = async (req, res) => {
   const { userId } = req.params;
-
   try {
     const user = await User.findById(userId);
 
@@ -66,7 +64,7 @@ export const getShippingAddress = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    res.status(200).json({ shippingAddress: user.shippingAddress });
+    res.status(200).json({ shippingAddress: user.shippingAddress, phone: user.phone });
   } catch (error) {
     res.status(500).json({ message: "Error fetching shipping address", error });
   }
@@ -82,6 +80,7 @@ export const saveShippingAddress = asyncHandler(async (req, res) => {
     village,
     postalCode,
     detail_address,
+    phone
   } = req.body;
 
   if (
@@ -102,6 +101,8 @@ export const saveShippingAddress = asyncHandler(async (req, res) => {
     return res.status(404).json({ message: "User not found" });
   }
 
+  user.phone = phone;
+
   const newAddress = {
     recipient,
     province,
@@ -119,9 +120,8 @@ export const saveShippingAddress = asyncHandler(async (req, res) => {
   }
 
   await user.save();
-
-
   res.status(200).json({
     shipping: [user.shippingAddress[0]],
+    phone: user.phone
   });
 });

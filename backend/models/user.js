@@ -44,6 +44,8 @@ const userSchema = new mongoose.Schema(
     },
     point: { type: Number, default: 0 },
 
+    phone: { type: Number, trim: true, },
+
     shippingAddress: [
       {
         recipient: String,

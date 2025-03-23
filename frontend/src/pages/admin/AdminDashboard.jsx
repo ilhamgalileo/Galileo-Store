@@ -17,7 +17,7 @@ import OrderList from "./OrderList";
 import Loader from "../../components/loader";
 import { toast } from 'react-toastify'
 import { useBackupDatabaseMutation } from "../../redux/api/backupApiSlice";
-import { FaUser, FaMoneyBill, FaShoppingBag, FaChartLine, FaCalendar, FaCalendarAlt, FaMoneyBillAlt } from "react-icons/fa";
+import { FaUser, FaShoppingBag, FaChartLine, FaCalendar, FaCalendarAlt, FaMoneyBillAlt, FaMoneyBillWave } from "react-icons/fa";
 import IncomePieChart from "../../components/IncomePieChart";
 
 const StatBox = ({ title, value, icon, loading }) => (
@@ -311,19 +311,20 @@ const AdminDashboard = () => {
         <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-6">
           <StatBox
             title="Total Sales"
-            value={sales?.totalSales ? `Rp ${new Intl.NumberFormat("id-ID").format(sales.totalSales)}` : "Rp 0"}
-            icon={<FaMoneyBill />}
+            value={sales?.totalSales ?
+              `Rp${new Intl.NumberFormat("id-ID").format(sales.totalSales)}` : "Rp 0"}
+            icon={<FaMoneyBillWave />}
             loading={loadingSales}
           />
           <StatBox
-            title="Total Income"
-            value={`Rp ${new Intl.NumberFormat("id-ID").format(income?.totalProfit)}`}
+            title="Profit"
+            value={`Rp${new Intl.NumberFormat("id-ID").format(income?.totalProfit)}`}
             icon={<FaMoneyBillAlt />}
             loading={loadingOrders}
           />
           <StatBox
             title="Average Sales"
-            value={`Rp ${new Intl.NumberFormat("id-ID").format(averageSales)}`}
+            value={`Rp${new Intl.NumberFormat("id-ID").format(averageSales)}`}
             icon={<FaChartLine />}
             loading={loadingSales || loadingOrders}
           />

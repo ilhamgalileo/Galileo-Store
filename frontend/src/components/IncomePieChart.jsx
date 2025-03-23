@@ -192,7 +192,7 @@ const IncomePieChart = () => {
   return (
     <div className="bg-neutral-800 rounded-lg shadow-lg p-6 mb-6">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-bold text-white">Income Distribution</h2>
+        <h2 className="text-lg font-bold text-white">Revenue</h2>
         <div className="flex gap-4">
           <select
             value={timeRange}

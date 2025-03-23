@@ -24,6 +24,8 @@ const Shipping = () => {
   const { data: userData, isLoading: isLoadingAddress, refetch: refetchAddress } = useGetAddressQuery(userInfo.user?._id);
   const shippingAddress = userData?.shippingAddress?.[0];
 
+  const [phone, setPhone] = useState(userData?.phone || "");
+
   const { selectedProvince, selectedCity, selectedDistrict, selectedVillage } = useSelector(
     (state) => state.shipping
   );
@@ -44,15 +46,16 @@ const Shipping = () => {
   const { data: villages, isLoading: isLoadingVillages } = useGetVillagesQuery(selectedDistrict?.value || undefined, { skip: !selectedDistrict?.value });
 
   useEffect(() => {
-    if (shippingAddress && !isLoadingAddress) {
+    if (userData && !isLoadingAddress) {
+      setPhone(userData.phone || "");
       setQrisBankDetails((prev) => ({
         ...prev,
-        recipient: prev.recipient || shippingAddress.recipient || "",
-        postalCode: prev.postalCode || shippingAddress.postalCode || "",
-        detailAddress: prev.detailAddress || shippingAddress.detail_address || "",
+        recipient: prev.recipient || shippingAddress?.recipient || "",
+        postalCode: prev.postalCode || shippingAddress?.postalCode || "",
+        detailAddress: prev.detailAddress || shippingAddress?.detail_address || "",
       }));
     }
-  }, [shippingAddress, isLoadingAddress, dispatch]);
+  }, [userData, isLoadingAddress, shippingAddress]);
 
   useEffect(() => {
     if (shippingAddress && provinces?.data) {
@@ -133,6 +136,7 @@ const Shipping = () => {
       try {
         await saveAddress({
           _id: userInfo.user._id,
+          phone: phone,
           ...shippingDetails,
         }).unwrap();
 
@@ -161,10 +165,15 @@ const Shipping = () => {
   };
 
   const handleQrisBankChange = (e) => {
-    setQrisBankDetails((prev) => ({
-      ...prev,
-      [e.target.name]: e.target.value,
-    }));
+    const { name, value } = e.target;
+    if (name === "phone") {
+      setPhone(value);
+    } else {
+      setQrisBankDetails((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
+    }
   };
 
   const handleProvinceChange = (selectedOption) => {
@@ -253,16 +262,30 @@ const Shipping = () => {
 
           {paymentMethod === "qris/bank" && (
             <>
-              <div className="mb-4">
-                <label className="block text-gray-950 mb-2">Recipient</label>
-                <input
-                  label="Recipient Package"
-                  name="recipient"
-                  className="w-full p-2 h-[3rem] border rounded shadow-xl text-white bg-neutral-700"
-                  value={qrisBankDetails.recipient}
-                  onChange={handleQrisBankChange}
-                  placeholder="Enter package recipient"
-                />
+              <div className="grid grid-cols-2 gap-4 mb-4">
+                <div className="mb-4">
+                  <label className="block text-gray-950 mb-2">Recipient</label>
+                  <input
+                    label="Recipient Package"
+                    name="recipient"
+                    className="w-full p-2 h-[3rem] border rounded shadow-xl text-white bg-neutral-700"
+                    value={qrisBankDetails.recipient}
+                    onChange={handleQrisBankChange}
+                    placeholder="Enter package recipient"
+                  />
+                </div>
+                <div className="mb-4">
+                  <label className="block text-gray-950 mb-2">Phone Number</label>
+                  <input
+                    label="Phone Number"
+                    name="phone"
+                    type="number"
+                    className="w-full p-2 h-[3rem] border rounded shadow-xl text-white bg-neutral-700"
+                    value={phone}
+                    onChange={handleQrisBankChange}
+                    placeholder="Enter phone number"
+                  />
+                </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4 mb-4">

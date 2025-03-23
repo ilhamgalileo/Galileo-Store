@@ -82,7 +82,7 @@ const Home = () => {
           <div>
             <h3 className="text-lg font-semibold mb-4">Quick Links</h3>
             <ul className="space-y-2">
-              {["Favorite", "Register", "Get Your Order"].map((item, index) => (
+              {["Favorite", "Register"].map((item, index) => (
                 <li key={index}>
                   <a href={`/${item.toLowerCase().replace(" ", "-")}`} className="hover:text-orange-600">
                     {item}
