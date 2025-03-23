@@ -214,6 +214,7 @@ export const getUserProfile = asyncHandler(async (req, res) => {
       username: user.username,
       email: user.email,
       point: user.point,
+      phone: user.phone,
       membership: user.membership
     });
   } else {
@@ -227,6 +228,7 @@ export const updateProfile = asyncHandler(async (req, res) => {
   if (user) {
     user.username = req.body.username || user.username;
     user.email = req.body.email || user.email;
+    user.phone = req.body.phone || user.phone
 
     if (req.body.password) {
       user.password = req.body.password;
@@ -238,6 +240,7 @@ export const updateProfile = asyncHandler(async (req, res) => {
         _id: updatedUser._id,
         username: updatedUser.username,
         email: updatedUser.email,
+        phone: updatedUser.phone
       },
     });
   } else {

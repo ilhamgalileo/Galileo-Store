@@ -20,6 +20,7 @@ const Profile = () => {
 
     const [updateProfile, { isLoading: loadingUpdateProfile }] = useProfileMutation();
     const { data: userProfile } = useGetUserProfileQuery();
+    const [phone, setPhone] = useState('');
     const membership = userProfile?.membership;
     const point = userProfile?.point || 0;
 
@@ -29,6 +30,12 @@ const Profile = () => {
             setEmail(userInfo.user.email);
         }
     }, [userInfo]);
+
+    useEffect(() => {
+        if (userProfile) {
+            setPhone(userProfile?.phone)
+        }
+    }, [userProfile])
 
     const dispatch = useDispatch();
     const submitHandler = async (e) => {
@@ -44,6 +51,7 @@ const Profile = () => {
                 _id: userInfo._id,
                 username,
                 email,
+                phone,
                 password,
             }).unwrap();
             dispatch(setCredientials({ ...res }));
@@ -56,11 +64,11 @@ const Profile = () => {
     const getMembershipBenefits = (membership) => {
         switch (membership) {
             case "Platinum":
-                return "7% off per transaction + free shipping";
+                return "7% off + free shipping";
             case "Gold":
-                return "5% off per transaction";
+                return "5% off";
             case "Silver":
-                return "3% off per transaction";
+                return "3% off";
         }
     };
 
@@ -87,8 +95,8 @@ const Profile = () => {
     };
 
     return (
-        <div className="container mx-auto p-5 max-w-lg">
-            <div className="mb-[5rem] h-[9rem]">
+        <div className="container mx-auto p-7 max-w-lg">
+            <div className="mb-[2rem] h-[9rem]">
                 {!userInfo.isAdmin && (
                     <>
                         <MembershipProgress point={point} membership={membership} />
@@ -117,7 +125,7 @@ const Profile = () => {
                     </>
                 )}
             </div>
-            <form onSubmit={submitHandler} className="space-y-4 ml- bg-white p-6 rounded-lg shadow-lg">
+            <form onSubmit={submitHandler} className="space-y-4 bg-white p-5 rounded-lg shadow-lg">
                 <div>
                     <label className="block text-gray-700 font-semibold mb-1">Name</label>
                     <input
@@ -137,6 +145,17 @@ const Profile = () => {
                         className="w-full p-3 border border-gray-300 rounded-md focus:ring-orange-500 focus:border-orange-500"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
+                        required
+                    />
+                </div>
+                <div>
+                    <label className="block text-gray-700 font-semibold mb-1">Phone</label>
+                    <input
+                        type="number"
+                        placeholder="Enter phone Number"
+                        className="w-full p-3 border border-gray-300 rounded-md focus:ring-orange-500 focus:border-orange-500"
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
                         required
                     />
                 </div>
