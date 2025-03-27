@@ -138,11 +138,18 @@ const StoreOrder = () => {
                                 <span className="text-red-600">Cancelled</span>
                             }</strong></p>
                             <p className="mb-1">Method: <strong>{order.paymentMethod}</strong></p>
-
                         </div>
-                        <div className="text-gray-900 absolute md:top-[9.5rem]  right-[1rem] md:right-[7rem] text-xs md:text-sm">
+                        <div className="text-gray-900 absolute md:top-[9.5rem] right-[1rem] md:right-[7rem] text-xs md:text-sm">
                             <h3 className="text-xs md:text-xl font-bold mb-0.5 md:mb-2.5">Cashier: </h3>
                             <p className="mb-1">Name: {order?.user?.username || "Unknown"}</p>
+                            {order?.membership && (
+                                <div>
+                                    <h3 className="text-xs md:text-xl font-bold mb-0.5 md:mb-2.5">Member Customer: </h3>
+                                    <p className="mb-1">Name: {order?.membershipName}</p>
+                                    <p className="mb-1">Email: {order?.membershipEmail}</p>
+                                    <p className="mb-1">Phone: {order?.membershipPhone}</p>
+                                </div>
+                            )}
                         </div>
                     </div>
 

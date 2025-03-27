@@ -2,19 +2,41 @@ import asyncHandler from "express-async-handler";
 import Product from "../models/product.js";
 import snap from "../config/midtrans.js";
 import OrderStore from "../models/orderStore.js";
+import User from "../models/user.js";
 
-function calcPrice(orderItems) {
-  const totalPrice = orderItems.reduce(
+function calcPrice(orderItems, membership) {
+  const itemsPrice = orderItems.reduce(
     (acc, item) => acc + item.price * item.qty,
     0
   );
+
+  let discountRate = 0;
+  if (membership === "Platinum") {
+    discountRate = 0.07;
+  } else if (membership === "Gold") {
+    discountRate = 0.05;
+  } else if (membership === "Silver") {
+    discountRate = 0.03;
+  }
+
+  const discount = itemsPrice * discountRate;
+  const totalPrice = Math.round(itemsPrice - discount);
+
   return {
     totalPrice: Math.round(totalPrice),
+    discount: Math.round(discount),
   };
 }
 
 export const createInStoreOrder = asyncHandler(async (req, res) => {
-  const { orderItems, paymentMethod } = req.body;
+  const {
+    orderItems,
+    paymentMethod,
+    membership,
+    membershipName,
+    membershipPhone,
+    membershipEmail,
+  } = req.body;
 
   if (!orderItems || orderItems.length === 0) {
     res.status(400);
@@ -44,13 +66,17 @@ export const createInStoreOrder = asyncHandler(async (req, res) => {
     };
   });
 
-  const { totalPrice } = calcPrice(dbOrderItems);
+  const { totalPrice, discount } = calcPrice(dbOrderItems, membership);
 
   const order = new OrderStore({
     orderItems: dbOrderItems,
     user: req.user._id,
+    membership,
     paymentMethod,
     totalPrice,
+    membershipName,
+    membershipPhone,
+    membershipEmail,
   });
 
   const createdOrder = await order.save();
@@ -62,8 +88,9 @@ export const createInStoreOrder = asyncHandler(async (req, res) => {
       gross_amount: totalPrice,
     },
     customer_details: {
-      first_name: req.user.username,
-      email: req.user.email,
+      first_name: membershipName || req.user.username,
+      email: membershipEmail || req.user.email,
+      phone: membershipPhone || "none",
     },
     item_details: [
       ...dbOrderItems.map((item) => ({
@@ -72,6 +99,16 @@ export const createInStoreOrder = asyncHandler(async (req, res) => {
         quantity: item.qty,
         name: item.name,
       })),
+      ...(discount > 0
+        ? [
+            {
+              id: "DISCOUNT",
+              price: -discount,
+              quantity: 1,
+              name: `Discount ${membership} Member`,
+            },
+          ]
+        : []),
     ],
   };
 
@@ -96,6 +133,25 @@ export const createInStoreOrder = asyncHandler(async (req, res) => {
       .status(500)
       .json({ message: "Failed to create order", error: error.message });
   }
+});
+
+export const getUserMembership = asyncHandler(async (req, res) => {
+  const { phone } = req.params;
+
+  const user = await User.findOne({ phone }).select(
+    "membership username point phone email"
+  );
+
+  if (!user) {
+    return res.status(404).json({ message: "user not found" });
+  }
+  res.json({
+    membership: user.membership,
+    username: user.username,
+    point: user.point,
+    phone: user.phone,
+    email: user.email,
+  });
 });
 
 export const markOrderIsPay = asyncHandler(async (req, res) => {

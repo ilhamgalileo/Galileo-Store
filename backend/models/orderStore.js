@@ -3,6 +3,13 @@ import mongoose from "mongoose";
 const orderStoreSchema = mongoose.Schema(
   {
     user: { type: mongoose.Schema.Types.ObjectId, required: true, ref: "User" },
+    membership: {
+      type: String,
+      enum: ["None", "Silver", "Gold", "Platinum"],
+    },
+    membershipName: { type: String },
+    membershipEmail: { type: String },
+    membershipPhone: { type: Number },
     orderItems: [
       {
         name: { type: String, required: true },

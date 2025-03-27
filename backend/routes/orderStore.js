@@ -6,6 +6,7 @@ import * as orderStore from '../controllers/orderStore.js'
 router.get('/all', authenticate,authorizeAdmin, orderStore.getAllStoreOrder)
 router.post('/', authenticate, orderStore.createInStoreOrder)
 router.put('/:id/pay', authenticate, orderStore.markOrderIsPay)
+router.get('/:phone/membership', authenticate, orderStore.getUserMembership)
 router.get('/total-income-store', authenticate, orderStore.calcTotalIncomeStore)
 router.get('/total-income-store-by-date', authenticate, orderStore.calcTotalProfitByDateStore)
 router.get('/total-income-store-by-week', authenticate, orderStore.calcTotalProfitByWeekStore)

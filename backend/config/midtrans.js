@@ -1,4 +1,4 @@
-import  Midtrans from 'midtrans-client';
+import Midtrans from 'midtrans-client';
 import dotenv from 'dotenv';
 
 dotenv.config();

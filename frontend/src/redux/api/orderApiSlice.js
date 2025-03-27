@@ -50,6 +50,12 @@ export const orderApiSlice = apiSlice.injectEndpoints({
       }),
     }),
 
+    getMemberByPhoneStore: builder.query({
+      query: (phone) => ({
+        url: `${STORE_ORDERS_URL}/${phone}/membership`,
+      }),
+    }),
+
     payOrder: builder.mutation({
       query: ({ orderId, details }) => ({
         url: `${ORDERS_URL}/${orderId}/pay`,
@@ -258,6 +264,7 @@ export const {
   useGetTotalIncomeCombineQuery,
   useGetTotalIncomeQuery,
   useGetTotalIncomeCashQuery,
+  useGetMemberByPhoneStoreQuery,
   useGetTotalIncomeByDateQuery,
   useGetTotalIncomeByMonthQuery,
   useGetTotalIncomeByYearQuery, 
