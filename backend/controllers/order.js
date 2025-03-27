@@ -115,6 +115,7 @@ export const createOrder = asyncHandler(async (req, res) => {
         address: shippingAddress.detail_address,
         city: `${shippingAddress.city}, ${shippingAddress.province},`,
         postal_code: shippingAddress.postalCode,
+        phone: phone,
       },
     },
     item_details: [
