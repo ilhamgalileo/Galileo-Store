@@ -33,7 +33,7 @@ const Shop = () => {
               product.price === parseInt(priceFilter, 10)
             const matchesName =
               product.name.toLowerCase().includes(searchTerm.toLowerCase())
-            const matchesBrand = 
+            const matchesBrand =
               selectedBrands.length === 0 || selectedBrands.includes(product.brand)
             return matchesPrice && matchesName && matchesBrand
           }
@@ -192,9 +192,11 @@ const Shop = () => {
           </div>
 
           <div className="flex-1 p-3">
-            <h2 className="h4 text-center mb-2 text-black">{products?.length} Products</h2>
+            {products?.length > 0 && (
+              <h2 className="h4 text-center mb-2 text-black">{products?.length} Products</h2>
+            )}
             {products.length === 0 ? (
-              <Loader />
+              <p className="text-center fontme text-lg text-black top-1">No product found</p>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 ml-[20rem]">
                 {products

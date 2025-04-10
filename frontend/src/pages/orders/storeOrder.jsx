@@ -142,7 +142,7 @@ const StoreOrder = () => {
                         <div className="text-gray-900 absolute md:top-[9.5rem] right-[1rem] md:right-[7rem] text-xs md:text-sm">
                             <h3 className="text-xs md:text-xl font-bold mb-0.5 md:mb-2.5">Cashier: </h3>
                             <p className="mb-1">Name: {order?.user?.username || "Unknown"}</p>
-                            {order?.membership && (
+                            {!order?.membershipName === null && (
                                 <div>
                                     <h3 className="text-xs md:text-xl font-bold mb-0.5 md:mb-2.5">Member Customer: </h3>
                                     <p className="mb-1">Name: {order?.membershipName}</p>

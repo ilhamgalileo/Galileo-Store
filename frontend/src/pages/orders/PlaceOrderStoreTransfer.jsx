@@ -101,10 +101,10 @@ const PlaceOrderStoreTransfer = () => {
         orderItems: cart.cartItems,
         paymentMethod: cart.paymentMethod,
         totalPrice: cart.totalPrice,
-        membership: membership,
-        membershipName: membershipData.username,
-        membershipEmail: membershipData.email,
-        membershipPhone: membershipData.phone,
+        membership: membership || 'None',
+        membershipName: membershipData?.username || null,
+        membershipEmail: membershipData?.email || null,
+        membershipPhone: membershipData?.phone || null,
     }).unwrap()
 
       const token = res.token;
@@ -231,7 +231,7 @@ const PlaceOrderStoreTransfer = () => {
                     type="number"
                     value={phoneInput}
                     onChange={(e) => setPhoneInput(e.target.value)}
-                    placeholder="Enter customer phone"
+                    placeholder="Enter customer phone (optional)"
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none"
                   />
                   <button
@@ -242,6 +242,7 @@ const PlaceOrderStoreTransfer = () => {
                     {isCheckingMembership ? "Checking..." : "Check Membership"}
                   </button>
                 </div>
+                <p className="text-gray-400 text-sm">Leave blank for non-member customers</p>
                 
                 {membershipData && (
                   <div className="bg-neutral-600 p-4 rounded-lg">
@@ -260,7 +261,7 @@ const PlaceOrderStoreTransfer = () => {
             disabled={isOrderLoading}
             className="w-full bg-orange-500 hover:bg-orange-600 text-white py-3 px-4 rounded-lg font-semibold transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isOrderLoading ? <Loader /> : "Place Order with Store Transfer"}
+            {isOrderLoading ? <Loader /> : "Submit"}
           </button>
 
           {orderError && <Message variant="danger">{orderError.data?.message}</Message>}

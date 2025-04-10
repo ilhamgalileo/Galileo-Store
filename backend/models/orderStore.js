@@ -6,10 +6,11 @@ const orderStoreSchema = mongoose.Schema(
     membership: {
       type: String,
       enum: ["None", "Silver", "Gold", "Platinum"],
+      default: "None",
     },
-    membershipName: { type: String },
-    membershipEmail: { type: String },
-    membershipPhone: { type: Number },
+    membershipName: { type: String, default: null },
+    membershipEmail: { type: String, default: null },
+    membershipPhone: { type: Number, default: null },
     orderItems: [
       {
         name: { type: String, required: true },

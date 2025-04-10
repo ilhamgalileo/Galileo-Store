@@ -560,13 +560,9 @@ export const calcTotalProfitByMonth = asyncHandler(async (req, res) => {
 
 export const calcTotalProfitByWeek = asyncHandler(async (req, res) => {
   try {
-    const profitByWeekOrder = await Order.aggregate([
-      {
-        $match: { isPaid: true }, 
-      },
-      {
-        $unwind: "$orderItems", 
-      },
+    const profitByWeek = await Order.aggregate([
+      { $match: { isPaid: true } },
+      { $unwind: "$orderItems" },
       {
         $lookup: {
           from: "products",
@@ -575,9 +571,7 @@ export const calcTotalProfitByWeek = asyncHandler(async (req, res) => {
           as: "productDetails",
         },
       },
-      {
-        $unwind: "$productDetails",
-      },
+      { $unwind: "$productDetails" },
       {
         $group: {
           _id: {
@@ -585,10 +579,12 @@ export const calcTotalProfitByWeek = asyncHandler(async (req, res) => {
             week: { $ceil: { $divide: [{ $dayOfMonth: "$paidAt" }, 7] } },
           },
           totalItemsPrice: {
-            $sum: { $multiply: ["$orderItems.price", "$orderItems.qty"] }, 
+            $sum: { $multiply: ["$orderItems.price", "$orderItems.qty"] },
           },
           totalPurchasePrice: {
-            $sum: { $multiply: ["$productDetails.purchasePrice", "$orderItems.qty"] },
+            $sum: {
+              $multiply: ["$productDetails.purchasePrice", "$orderItems.qty"],
+            },
           },
           totalDiscount: {
             $sum: {
@@ -614,6 +610,9 @@ export const calcTotalProfitByWeek = asyncHandler(async (req, res) => {
       },
       {
         $project: {
+          _id: {
+            $concat: ["$_id.month", "-", { $toString: "$_id.week" }],
+          },
           totalProfit: {
             $round: [
               {
@@ -627,18 +626,18 @@ export const calcTotalProfitByWeek = asyncHandler(async (req, res) => {
           },
         },
       },
+      { $sort: { "_id": 1 } },
     ]);
 
-    res.json(profitByWeekOrder);
+    res.json(profitByWeek);
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: "Error calculating profit by date.",
+      message: "Error calculating profit by week.",
       error: error.message,
     });
   }
 });
-
 export const calcTotalSales = asyncHandler(async (req, res) => {
   const [orders, cashOrders, storeOrders] = await Promise.all([
     Order.find({ isPaid: true }),

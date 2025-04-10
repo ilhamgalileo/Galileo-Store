@@ -36,18 +36,6 @@ const StatBox = ({ title, value, icon, loading }) => (
   </div>
 );
 
-const generateDateRange = (startDate, endDate) => {
-  const dates = []
-  let currentDate = new Date(startDate);
-
-  while (currentDate <= endDate) {
-    dates.push(new Date(currentDate).toISOString().split("T")[0]);
-    currentDate.setDate(currentDate.getDate() + 1);
-  }
-
-  return dates
-};
-
 const generateAllWeeksInMonth = (month) => {
   const weeks = []
   const year = new Date().getFullYear()

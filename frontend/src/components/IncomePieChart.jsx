@@ -39,34 +39,76 @@ const IncomePieChart = () => {
 
   const formatRupiah = (value) => `Rp${value.toLocaleString("id-ID")}`;
 
+  const isCurrentMonth = (dateString) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    return date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear();
+  };
+
   const getIncomeData = () => {
     switch (timeRange) {
       case "daily":
         if (paymentMethod === "cash") {
-          return incomeCashByDate ? incomeCashByDate.map((item) => item.totalProfit) : [0];
+          return incomeCashByDate
+            ? incomeCashByDate
+              .filter(item => isCurrentMonth(item._id))
+              .map((item) => item.totalProfit)
+            : [0];
         } else if (paymentMethod === "order") {
-          return incomeOrderByDate ? incomeOrderByDate.map((item) => item.totalProfit) : [0];
+          return incomeOrderByDate
+            ? incomeOrderByDate
+              .filter(item => isCurrentMonth(item._id))
+              .map((item) => item.totalProfit)
+            : [0];
         } else if (paymentMethod === "store") {
-          return incomeStoreByDate ? incomeStoreByDate.map((item) => item.totalProfit) : [0];
+          return incomeStoreByDate
+            ? incomeStoreByDate
+              .filter(item => isCurrentMonth(item._id))
+              .map((item) => item.totalProfit)
+            : [0];
         } else {
           return [
-            incomeCashByDate?.reduce((sum, item) => sum + item.totalProfit, 0) || 0,
-            incomeOrderByDate?.reduce((sum, item) => sum + item.totalProfit, 0) || 0,
-            incomeStoreByDate?.reduce((sum, item) => sum + item.totalProfit, 0) || 0,
+            incomeCashByDate
+              ?.filter(item => isCurrentMonth(item._id))
+              .reduce((sum, item) => sum + item.totalProfit, 0) || 0,
+            incomeOrderByDate
+              ?.filter(item => isCurrentMonth(item._id))
+              .reduce((sum, item) => sum + item.totalProfit, 0) || 0,
+            incomeStoreByDate
+              ?.filter(item => isCurrentMonth(item._id))
+              .reduce((sum, item) => sum + item.totalProfit, 0) || 0,
           ];
         }
       case "weekly":
         if (paymentMethod === "cash") {
-          return incomeCashByWeek ? incomeCashByWeek.map((item) => item.totalProfit) : [0];
+          return incomeCashByWeek 
+            ? incomeCashByWeek
+                .filter(item => isCurrentMonth(item._id))
+                .map((item) => item.totalProfit) 
+            : [0];
         } else if (paymentMethod === "order") {
-          return incomeOrderByWeek ? incomeOrderByWeek.map((item) => item.totalProfit) : [0];
+          return incomeOrderByWeek 
+            ? incomeOrderByWeek
+                .filter(item => isCurrentMonth(item._id))
+                .map((item) => item.totalProfit)
+            : [0];
         } else if (paymentMethod === "store") {
-          return incomeStoreByWeek ? incomeStoreByWeek.map((item) => item.totalProfit) : [0];
+          return incomeStoreByWeek 
+            ? incomeStoreByWeek
+                .filter(item => isCurrentMonth(item._id))
+                .map((item) => item.totalProfit)
+            : [0];
         } else {
           return [
-            incomeCashByWeek?.reduce((sum, item) => sum + item.totalProfit, 0) || 0,
-            incomeOrderByWeek?.reduce((sum, item) => sum + item.totalProfit, 0) || 0,
-            incomeStoreByWeek?.reduce((sum, item) => sum + item.totalProfit, 0) || 0,
+            incomeCashByWeek
+              ?.filter(item => isCurrentMonth(item._id))
+              .reduce((sum, item) => sum + item.totalProfit, 0) || 0,
+            incomeOrderByWeek
+              ?.filter(item => isCurrentMonth(item._id))
+              .reduce((sum, item) => sum + item.totalProfit, 0) || 0,
+            incomeStoreByWeek
+              ?.filter(item => isCurrentMonth(item._id))
+              .reduce((sum, item) => sum + item.totalProfit, 0) || 0,
           ];
         }
       case "monthly":
@@ -110,21 +152,42 @@ const IncomePieChart = () => {
     switch (timeRange) {
       case "daily":
         if (paymentMethod === "cash") {
-          return incomeCashByDate?.map((item) => item._id) || ["No Data"];
+          return incomeCashByDate
+            ?.filter(item => isCurrentMonth(item._id))
+            .map((item) => item._id) || ["No Data"];
         } else if (paymentMethod === "order") {
-          return incomeOrderByDate?.map((item) => item._id) || ["No Data"];
+          return incomeOrderByDate
+            ?.filter(item => isCurrentMonth(item._id))
+            .map((item) => item._id) || ["No Data"];
         } else if (paymentMethod === "store") {
-          return incomeStoreByDate?.map((item) => item._id) || ["No Data"];
+          return incomeStoreByDate
+            ?.filter(item => isCurrentMonth(item._id))
+            .map((item) => item._id) || ["No Data"];
         } else {
           return ["Cash", "Order", "Store"];
         }
       case "weekly":
         if (paymentMethod === "cash") {
-          return incomeCashByWeek?.map((item) => `Week ${item._id?.week}`) || ["No Data"];
+          return incomeCashByWeek
+            ?.filter(item => isCurrentMonth(item._id))
+            .map((item) => {
+              const weekNumber = item._id.split("-").pop();
+              return `Week ${weekNumber}`;
+            }) || ["No Data"];
         } else if (paymentMethod === "order") {
-          return incomeOrderByWeek?.map((item) => `Week ${item._id?.week}`) || ["No Data"];
+          return incomeOrderByWeek
+            ?.filter(item => isCurrentMonth(item._id))
+            .map((item) => {
+              const weekNumber = item._id.split("-").pop();
+              return `Week ${weekNumber}`;
+            }) || ["No Data"];
         } else if (paymentMethod === "store") {
-          return incomeStoreByWeek?.map((item) => `Week ${item._id?.week}`) || ["No Data"]
+          return incomeStoreByWeek
+            ?.filter(item => isCurrentMonth(item._id))
+            .map((item) => {
+              const weekNumber = item._id.split("-").pop();
+              return `Week ${weekNumber}`;
+            }) || ["No Data"];
         } else {
           return ["Cash", "Order", "Store"];
         }

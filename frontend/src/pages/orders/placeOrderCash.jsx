@@ -33,7 +33,7 @@ const PlaceCashOrder = () => {
   };
 
   useEffect(() => {
-    const discount = calculateDiscount(itemsPrice, membership);
+    const discount = Math.round(calculateDiscount(itemsPrice, membership));
     const newTotalPrice = Math.round(itemsPrice - discount);
     setTotalPrice(newTotalPrice);
   }, [itemsPrice, membership]);

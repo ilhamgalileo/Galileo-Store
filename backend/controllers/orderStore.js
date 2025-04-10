@@ -287,6 +287,9 @@ export const calcTotalProfitByWeekStore = asyncHandler(async (req, res) => {
       },
       {
         $project: {
+          _id: {
+            $concat: ["$_id.month", "-", { $toString: "$_id.week" }],
+          },
           totalProfit: {
             $round: [
               {

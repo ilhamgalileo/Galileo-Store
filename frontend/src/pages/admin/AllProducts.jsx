@@ -45,8 +45,13 @@ const AllProducts = () => {
                                 className="p-2 border rounded-lg w-full md:w-1/3 bg-neutral-800 text-gray-100"
                             />
                         </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                            {filteredProducts.map((product) => (
+                        {filteredProducts.length === 0 ? (
+                            <div className="text-center py-8">
+                                <p className="text-xl text-black ml-[5rem]">No products found</p>
+                            </div>
+                        ) : (
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                                {filteredProducts.map((product) => (
                                 <div
                                     key={product._id}
                                     className="border rounded-lg shadow-lg p-4 mb-4 overflow-hidden bg-neutral-700 h-full flex flex-col"
@@ -103,8 +108,9 @@ const AllProducts = () => {
                                         </div>
                                     </div>
                                 </div>
-                            ))}
-                        </div>
+                                ))}
+                            </div>
+                        )}
                     </div>
                     <div className="md:w-1/4 p-3 mt-2">
                     </div>
