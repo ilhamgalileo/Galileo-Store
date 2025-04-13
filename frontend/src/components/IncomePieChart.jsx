@@ -252,6 +252,11 @@ const IncomePieChart = () => {
     series: getIncomeData(),
   };
 
+  const hasNoData = () => {
+    const incomeData = getIncomeData();
+    return incomeData.every(value => value === 0);
+  };
+
   return (
     <div className="bg-neutral-800 rounded-lg shadow-lg p-6 mb-6">
       <div className="flex items-center justify-between mb-4">
@@ -280,12 +285,18 @@ const IncomePieChart = () => {
           </select>
         </div>
       </div>
-      <Chart
-        options={pieChartConfig.options}
-        series={getIncomeData()}
-        type="pie"
-        height={350}
-      />
+      {hasNoData() ? (
+        <div className="flex items-center justify-center h-64 bg-gray-700 rounded-lg">
+          <p className="text-white text-lg">No orders available for the selected time period</p>
+        </div>
+      ) : (
+        <Chart
+          options={pieChartConfig.options}
+          series={getIncomeData()}
+          type="pie"
+          height={350}
+        />
+      )}
     </div>
   );
 };

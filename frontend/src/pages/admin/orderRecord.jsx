@@ -188,7 +188,7 @@ const OrderRecord = () => {
                 <select
                     value={paymentFilter}
                     onChange={(e) => setPaymentFilter(e.target.value)}
-                    className="bg-gray-600 w-full md:w-1/4 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    className="bg-gray-600 w-full md:w-1/3 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
                 >
                     <option value="all">All Status</option>
                     <option value="paid">Paid</option>
@@ -208,7 +208,7 @@ const OrderRecord = () => {
                 <select
                     value={paymentMethodFilter}
                     onChange={(e) => setPaymentMethodFilter(e.target.value)}
-                    className="bg-gray-600 w-full md:w-1/4 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    className="bg-gray-600 w-full md:w-1/3 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
                 >
                     <option value="all">All Payment Methods</option>
                     <option value="cash">Cash</option>
@@ -279,7 +279,7 @@ const OrderRecord = () => {
                                                     label={order.isPaid ? "Paid" : "Unpaid"}
                                                 />
                                             </td>
-                                            <td className="whitespace-nowrap px-3 py-4 text-sm text-white">
+                                            <td className="whitespace-nowrap px-3 py-4 text-sm text-center text-white">
                                                 {order.paymentMethod || "N/A"}
                                             </td>
                                             <td className="whitespace-nowrap px-3 py-4 text-sm">
@@ -298,7 +298,7 @@ const OrderRecord = () => {
                                     {filteredOrders.length === 0 && (
                                         <tr>
                                             <td colSpan="9" className="text-center py-4 text-white">
-                                                No store orders found.
+                                                No orders found.
                                             </td>
                                         </tr>
                                     )}
@@ -311,7 +311,7 @@ const OrderRecord = () => {
                                                 {order._id}
                                             </td>
                                             <td className="whitespace-nowrap px-3 py-4 text-sm text-white">
-                                                {order.user?.username || "N/A"}
+                                                {order.membershipName || "Guest"}
                                             </td>
                                             <td className="whitespace-nowrap px-3 py-4 text-sm text-white">
                                                 Rp {new Intl.NumberFormat('id-ID').format(order.totalPrice)}
@@ -325,7 +325,7 @@ const OrderRecord = () => {
                                                     label={order.isPaid ? "Paid" : "Unpaid"}
                                                 />
                                             </td>
-                                            <td className="whitespace-nowrap px-3 py-4 text-sm text-white">
+                                            <td className="whitespace-nowrap px-3 py-4 text-sm text-center text-white">
                                                 {order.paymentMethod || "N/A"}
                                             </td>
                                             <td className="whitespace-nowrap px-3 py-4 text-sm text-white">
@@ -354,7 +354,7 @@ const OrderRecord = () => {
                                                 {order._id}
                                             </td>
                                             <td className="whitespace-nowrap px-3 py-4 text-sm text-white">
-                                                {order?.customerName}
+                                                {order?.customerName || "Guest"}
                                             </td>
                                             <td className="whitespace-nowrap px-3 py-4 text-sm text-white">
                                                 Rp {new Intl.NumberFormat('id-ID').format(order.totalAmount)}
@@ -368,7 +368,7 @@ const OrderRecord = () => {
                                                     label={order.isPaid ? "Paid" : "Unpaid"}
                                                 />
                                             </td>
-                                            <td className="whitespace-nowrap px-3 py-4 text-sm text-white">
+                                            <td className="whitespace-nowrap px-3 py-4 text-sm text-center text-white">
                                                 {order.paymentMethod || "N/A"}
                                             </td>
                                             <td className="whitespace-nowrap px-3 py-4 text-sm text-white">

@@ -80,7 +80,11 @@ const generateAllYears = (startYear, endYear) => {
 
 const AdminDashboard = () => {
   const [backupDatabase, { isLoading: isBackingUp }] = useBackupDatabaseMutation();
-  const [timeRange, setTimeRange] = useState("daily")
+  const [timeRange, setTimeRange] = useState("daily");
+  const [backupSettings] = useState({
+    interval: 6,
+    startYear: 2025
+  });
 
   const { data: sales, isLoading: loadingSales } = useGetTotalSalesQuery();
   const { data: customers, isLoading: loadingCustomers } = useGetUserCountQuery();
@@ -93,12 +97,17 @@ const AdminDashboard = () => {
 
   useEffect(() => {
     const now = new Date();
-    const currentDate = now.getDate();
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth() + 1; 
 
-    if (currentDate === 1) {
-      handleBackup();
+    if (currentYear >= backupSettings.startYear) {
+      if ((currentMonth - 1) % backupSettings.interval === 0) {
+        if (now.getDate() === 1) {
+          handleBackup();
+        }
+      }
     }
-  }, []);
+  }, [backupSettings]);
 
   const handleBackup = async () => {
     try {
@@ -286,13 +295,15 @@ const AdminDashboard = () => {
               <FaCalendar className="text-gray-800" />
               <span>{new Date().toLocaleDateString("en-US", { month: "long", year: "numeric" })}</span>
             </div>
-            <button
-              onClick={handleBackup}
-              disabled={isBackingUp}
-              className="bg-orange-500 text-white px-4 py-2 rounded-lg shadow-md hover:bg-orange-600 transition"
-            >
-              {isBackingUp ? "Backing up..." : "Backup Data"}
-            </button>
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={handleBackup}
+                disabled={isBackingUp}
+                className="bg-orange-500 text-white px-4 py-2 rounded-lg shadow-md hover:bg-orange-600 transition"
+              >
+                {isBackingUp ? "Backing up..." : "Backup Data"}
+              </button>
+            </div>
           </div>
         </div>
 

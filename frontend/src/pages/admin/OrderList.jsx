@@ -124,6 +124,10 @@ const OrderList = () => {
 
   const pageCount = Math.ceil(allFilteredOrders.length / itemsPerPage);
 
+  const showNoOrdersMessage = searchTerm !== "" && filteredOrders.length === 0;
+  const showNoCashOrdersMessage = searchTerm !== "" && filteredCashOrders.length === 0;
+  const showNoStoreOrdersMessage = searchTerm !== "" && filteredStoreOrders.length === 0;
+
   const offset = currentPage * itemsPerPage;
   const currentOrders = allFilteredOrders.slice(offset, offset + itemsPerPage);
 
@@ -184,6 +188,21 @@ const OrderList = () => {
         </div>
 
         <div className="mt-8 flex flex-col">
+          {showNoOrdersMessage && (
+            <div className="mb-4 p-4 bg-gray-600 rounded-lg">
+              <p className="text-white">No regular orders found matching your search</p>
+            </div>
+          )}
+          {showNoCashOrdersMessage && (
+            <div className="mb-4 p-4 bg-gray-600 rounded-lg">
+              <p className="text-white">No cash orders found matching your search</p>
+            </div>
+          )}
+          {showNoStoreOrdersMessage && (
+            <div className="mb-4 p-4 bg-gray-600 rounded-lg">
+              <p className="text-white">No store orders found matching your search</p>
+            </div>
+          )}
           <div className="-mx-4 -my-1 overflow-x-auto sm:-mx-6 lg:-mx-8">
             <div className="inline-block min-w-[90%] py-2 ml-[4rem]">
               <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 rounded-lg">
@@ -211,7 +230,9 @@ const OrderList = () => {
                           {order._id}
                         </td>
                         <td className="whitespace-nowrap px-3 py-4 text-sm text-white">
-                          {order.user ? order.user.username : "N/A"}
+                          {filteredStoreOrders.includes(order) && order.membershipName 
+                            ? order.membershipName
+                            : (order.user ? order.user.username : "Guest")}
                         </td>
                         <td className="whitespace-nowrap px-3 py-4 text-sm text-white">
                           Rp

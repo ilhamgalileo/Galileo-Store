@@ -15,7 +15,6 @@ export const getCart = asyncHandler(async (req, res) => {
 export const addProduct = asyncHandler(async (req, res) => {
   const { sku, quantity } = req.body
   const { _id } = req.user
-  console.log("User ID:", _id)
 
     const product = await Product.findOne({ sku })
     if (!product) {

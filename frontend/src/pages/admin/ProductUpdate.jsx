@@ -9,6 +9,7 @@ import {
 } from "../../redux/api/productApiSlice";
 import { useFetchCateQuery } from "../../redux/api/categoryApiSlice";
 import { toast } from "react-toastify";
+import { useSelector } from "react-redux";
 
 const ProductUpdate = () => {
   const params = useParams();
@@ -16,6 +17,7 @@ const ProductUpdate = () => {
 
   const { data: productData } = useGetProductByIdQuery(params.id);
   const { data: categories = [] } = useFetchCateQuery();
+  const { userInfo } = useSelector((state) => state.auth);
   const [uploadProductImage] = useUploadProductImageMutation();
   const [updateProduct] = useUpdateProductMutation();
   const [deleteProduct] = useDeleteProductMutation();
@@ -252,17 +254,32 @@ const ProductUpdate = () => {
                 />
               </div>
 
-              <div>
-                <label htmlFor="purchasePrice">Purchase Price</label>
-                <input
-                  type="text"
-                  name="purchasePrice"
-                  value={formatToRupiah(formData.purchasePrice)}
-                  onChange={handleInputChange}
-                  className="p-4 w-full border rounded-lg bg-[#101011] text-white"
-                  required
-                />
-              </div>
+              {userInfo.user?.isAdmin ? (
+                <div>
+                  <label htmlFor="purchasePrice">Purchase Price</label>
+                  <input
+                    type="text"
+                    name="purchasePrice"
+                    value={formatToRupiah(formData.purchasePrice)}
+                    onChange={handleInputChange}
+                    className="p-4 w-full border rounded-lg bg-gray-500 text-white"
+                    required
+                    disabled
+                  />
+                </div>
+              ) : userInfo.user?.isSuperAdmin && (
+                <div>
+                  <label htmlFor="purchasePrice">Purchase Price</label>
+                  <input
+                    type="text"
+                    name="purchasePrice"
+                    value={formatToRupiah(formData.purchasePrice)}
+                    onChange={handleInputChange}
+                    className="p-4 w-full border rounded-lg bg-[#101011] text-white"
+                    required
+                  />
+                </div>
+              )}
 
               <div>
                 <label htmlFor="quantity">Quantity</label>
