@@ -348,8 +348,9 @@ const Shipping = () => {
                     name="postalCode"
                     className="w-full p-2 h-[3rem] border rounded shadow-xl text-white bg-neutral-700"
                     value={qrisBankDetails.postalCode}
-                    placeholder="Postal code will be set automatically"
-                    readOnly
+                    onChange={handleQrisBankChange}
+                    placeholder="Enter your postal code"
+                    required
                   />
                 </div>
               </div>
